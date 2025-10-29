@@ -1,0 +1,49 @@
+#ifndef LOGGER_H
+#define LOGGER_H
+
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
+// 日志级别
+typedef enum
+{
+    LOG_LEVEL_DEBUG = 0,
+    LOG_LEVEL_INFO  = 1,
+    LOG_LEVEL_ERROR = 2
+} log_level_t;
+
+extern log_level_t current_log_level;
+
+// 获取文件名（不包含路径）
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
+// 通用日志宏
+#define LOG(level, level_str, fmt, ...)                                         \
+    do                                                                          \
+    {                                                                           \
+        if (current_log_level <= level)                                         \
+        {                                                                       \
+            time_t     now     = time(NULL);                                    \
+            struct tm *tm_info = localtime(&now);                               \
+            printf("[%04d-%02d-%02d %02d:%02d:%02d] [%s] [%s:%d %s] " fmt "\n", \
+                   tm_info->tm_year + 1900,                                     \
+                   tm_info->tm_mon + 1,                                         \
+                   tm_info->tm_mday,                                            \
+                   tm_info->tm_hour,                                            \
+                   tm_info->tm_min,                                             \
+                   tm_info->tm_sec,                                             \
+                   level_str,                                                   \
+                   __FILENAME__,                                                \
+                   __LINE__,                                                    \
+                   __func__,                                                    \
+                   ##__VA_ARGS__);                                              \
+            fflush(stdout);                                                     \
+        }                                                                       \
+    } while (0)
+
+#define LOG_INFO(fmt, ...) LOG(LOG_LEVEL_INFO, "INFO", fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...) LOG(LOG_LEVEL_ERROR, "ERROR", fmt, ##__VA_ARGS__)
+#define LOG_DEBUG(fmt, ...) LOG(LOG_LEVEL_DEBUG, "DEBUG", fmt, ##__VA_ARGS__)
+
+#endif

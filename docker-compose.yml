@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  mqtt-forwarder:
+    build: .
+    container_name: mqtt-forwarder
+    restart: unless-stopped
+    network_mode: host
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

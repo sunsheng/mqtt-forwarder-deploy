@@ -1,0 +1,7 @@
+build/
+.vscode/
+*.md
+.git/
+*.tar.gz
+*.service
+install-service.sh
