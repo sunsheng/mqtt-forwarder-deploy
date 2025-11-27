@@ -121,17 +121,17 @@ void forward_downstream_to_upstream_callback(mqtt_client_t                  *sou
             *p = '|';
     }
 
-    output_json   = cJSON_CreateObject();
-    cJSON *b_obj  = cJSON_CreateObject();
-    cJSON *dl_obj = cJSON_CreateObject();
-    cJSON *h_obj  = cJSON_CreateObject();
+    output_json        = cJSON_CreateObject();
+    cJSON *body_obj    = cJSON_CreateObject();
+    cJSON *dl_obj      = cJSON_CreateObject();
+    cJSON *header_obj  = cJSON_CreateObject();
 
     cJSON_AddStringToObject(dl_obj, key, value);
-    cJSON_AddItemToObject(b_obj, "dl", dl_obj);
-    cJSON_AddItemToObject(output_json, "b", b_obj);
+    cJSON_AddItemToObject(body_obj, "dl", dl_obj);
+    cJSON_AddItemToObject(output_json, "b", body_obj);
 
-    cJSON_AddStringToObject(h_obj, "rt", name_copy);
-    cJSON_AddItemToObject(output_json, "h", h_obj);
+    cJSON_AddStringToObject(header_obj, "rt", name_copy);
+    cJSON_AddItemToObject(output_json, "h", header_obj);
 
     message_buffer = cJSON_PrintUnformatted(output_json);
     if (!message_buffer)
