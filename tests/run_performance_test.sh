@@ -8,12 +8,19 @@ cd "$(dirname "$0")"
 # 启动基础服务
 docker compose -f docker-compose.test.yml up -d mqtt-broker-upstream mqtt-broker-downstream mqtt-forwarder
 
-# 等待服务健康检查通过
+# 等待服务健康检查通过 - 改进等待逻辑
 echo "等待服务启动..."
-timeout 60 bash -c '
-  while ! docker compose -f docker-compose.test.yml ps | grep -q "healthy.*healthy.*healthy"; do
-    echo "等待服务健康检查..."
-    sleep 2
+timeout 120 bash -c '
+  while true; do
+    echo "检查服务状态..."
+    if docker compose -f docker-compose.test.yml ps --format json | jq -r ".[].Health" | grep -q "healthy"; then
+      healthy_count=$(docker compose -f docker-compose.test.yml ps --format json | jq -r ".[].Health" | grep -c "healthy" || echo "0")
+      if [ "$healthy_count" -eq 3 ]; then
+        echo "所有服务已就绪"
+        break
+      fi
+    fi
+    sleep 3
   done
 '
 

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mqtt-broker-upstream:
     image: eclipse-mosquitto:2.0
@@ -33,10 +31,10 @@ services:
     environment:
       - LOG_LEVEL=DEBUG
     healthcheck:
-      test: ["CMD", "pgrep", "mqtt_forwarder"]
-      interval: 5s
-      timeout: 3s
-      retries: 3
+      test: ["CMD", "sh", "-c", "ps aux | grep mqtt_forwarder | grep -v grep"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
     deploy:
       resources:
         limits:
