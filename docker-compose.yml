@@ -6,13 +6,10 @@ services:
     container_name: mqtt-forwarder
     restart: unless-stopped
     network_mode: host
+    volumes:
+      - ./config.json:/app/config.json
     environment:
-      - UPSTREAM_BROKER=192.168.4.112    # 上游MQTT Broker（数据源）
-      - DOWNSTREAM_BROKER=192.168.6.10   # 下游MQTT Broker（数据目标）
-      - MQTT_PORT=1883
-      - TOPIC_PROPERTY_EVENT=/ge/web/#
-      - TOPIC_COMMAND=/gc/web/#
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=INFO    # 日志级别，优先级高于JSON配置
     logging:
       driver: "json-file"
       options:

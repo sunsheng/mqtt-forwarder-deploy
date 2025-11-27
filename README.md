@@ -6,7 +6,7 @@
 
 - 🔄 双向MQTT消息转发
 - 📝 JSON格式转换和包装
-- 🔧 环境变量配置
+- 🔧 JSON配置文件支持
 - 🐳 Docker容器化部署
 - 📊 结构化日志输出
 - 🔒 非root用户运行
@@ -18,9 +18,10 @@
 ```bash
 # 下载配置文件
 wget https://raw.githubusercontent.com/sunsheng/mqtt-forwarder-deploy/main/docker-compose.yml
+wget https://raw.githubusercontent.com/sunsheng/mqtt-forwarder-deploy/main/config.json
 
-# 修改环境变量配置
-vim docker-compose.yml
+# 修改配置文件
+vim config.json
 
 # 启动服务
 docker-compose up -d
@@ -36,21 +37,85 @@ docker run -d \
   --name mqtt-forwarder \
   --restart unless-stopped \
   --network host \
-  -e UPSTREAM_BROKER=192.168.4.112 \
-  -e DOWNSTREAM_BROKER=192.168.6.10 \
+  -v $(pwd)/config.json:/app/config.json \
+  -e LOG_LEVEL=DEBUG \
   ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt-forwarder:latest
 ```
 
 ## 配置说明
 
-| 环境变量 | 默认值 | 说明 |
-|---------|--------|------|
-| `UPSTREAM_BROKER` | 192.168.4.112 | 上游MQTT Broker地址（数据源） |
-| `DOWNSTREAM_BROKER` | 192.168.6.10 | 下游MQTT Broker地址（数据目标） |
-| `MQTT_PORT` | 1883 | MQTT端口 |
-| `TOPIC_PROPERTY_EVENT` | /ge/web/# | 属性事件主题 |
-| `TOPIC_COMMAND` | /gc/web/# | 指令主题 |
-| `LOG_LEVEL` | INFO | 日志级别（DEBUG/INFO/ERROR） |
+### JSON配置文件 (config.json)
+
+```json
+{
+  "log_level": "info",
+  "mqtt": {
+    "port": 1883,
+    "keepalive": 60,
+    "qos": 0,
+    "retain": false,
+    "clean_session": true,
+    "username": null,
+    "password": null
+  },
+  "clients": [
+    {
+      "name": "upstream",
+      "ip": "192.168.4.112",
+      "port": null,
+      "client_id": "mqtt_forwarder_upstream"
+    },
+    {
+      "name": "downstream",
+      "ip": "192.168.6.10",
+      "port": null,
+      "client_id": "mqtt_forwarder_downstream"
+    }
+  ],
+  "rules": [
+    {
+      "name": "property_events",
+      "description": "属性事件转发：下游->上游",
+      "source": {
+        "client": "downstream",
+        "topic": "/ge/web/#"
+      },
+      "target": {
+        "client": "upstream",
+        "topic": "/ge/web/#"
+      },
+      "callback": "EventCall",
+      "enabled": true
+    }
+  ]
+}
+```
+
+### 环境变量
+
+| 环境变量 | 说明 | 默认值 |
+|---------|------|--------|
+| `LOG_LEVEL` | 日志级别（debug/info/error），优先级高于JSON配置 | info |
+
+### 配置优先级
+
+**日志级别**: 环境变量 > JSON配置 > 默认值
+
+## 使用方法
+
+### 命令行参数
+
+```bash
+# 使用默认配置文件 (./config.json 或 /etc/mqtt-forwarder.json)
+./mqtt_forwarder
+
+# 指定配置文件
+./mqtt_forwarder -c /path/to/config.json
+./mqtt_forwarder --config=config.json
+
+# 查看帮助
+./mqtt_forwarder -h
+```
 
 ## 数据流向
 
@@ -84,7 +149,7 @@ cmake ..
 make
 
 # 运行
-./modular/mqtt_forwarder_modular
+./mqtt_forwarder -c ../config.json
 ```
 
 ## 依赖要求

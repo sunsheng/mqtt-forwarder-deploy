@@ -1,0 +1,56 @@
+{
+  "log_level": "info",
+  "mqtt": {
+    "port": 1883,
+    "keepalive": 60,
+    "qos": 0,
+    "retain": false,
+    "clean_session": true,
+    "username": null,
+    "password": null
+  },
+  "clients": [
+    {
+      "name": "upstream",
+      "ip": "192.168.4.112",
+      "port": null,
+      "client_id": "mqtt_forwarder_upstream"
+    },
+    {
+      "name": "downstream",
+      "ip": "192.168.6.10",
+      "port": null,
+      "client_id": "mqtt_forwarder_downstream"
+    }
+  ],
+  "rules": [
+    {
+      "name": "property_events",
+      "description": "属性事件转发：下游->上游",
+      "source": {
+        "client": "downstream",
+        "topic": "/ge/web/#"
+      },
+      "target": {
+        "client": "upstream",
+        "topic": "/ge/web/#"
+      },
+      "callback": "EventCall",
+      "enabled": true
+    },
+    {
+      "name": "commands",
+      "description": "指令转发：上游->下游",
+      "source": {
+        "client": "upstream",
+        "topic": "/gc/web/#"
+      },
+      "target": {
+        "client": "downstream",
+        "topic": "/gc/web/#"
+      },
+      "callback": "CommandCall",
+      "enabled": true
+    }
+  ]
+}

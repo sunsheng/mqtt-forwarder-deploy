@@ -36,6 +36,28 @@ static inline void init_log_level() {
     }
 }
 
+// 从字符串和环境变量设置日志级别 (优先级: 环境变量 > JSON配置 > 默认值)
+static inline void set_log_level_from_config(const char* json_level) {
+    // 1. 优先使用环境变量
+    const char* env_level = getenv("LOG_LEVEL");
+    const char* level_str = env_level ? env_level : json_level;
+    
+    if (!level_str) {
+        current_log_level = LOG_LEVEL_INFO; // 默认值
+        return;
+    }
+    
+    if (strcmp(level_str, "debug") == 0 || strcmp(level_str, "DEBUG") == 0) {
+        current_log_level = LOG_LEVEL_DEBUG;
+    } else if (strcmp(level_str, "info") == 0 || strcmp(level_str, "INFO") == 0) {
+        current_log_level = LOG_LEVEL_INFO;
+    } else if (strcmp(level_str, "error") == 0 || strcmp(level_str, "ERROR") == 0) {
+        current_log_level = LOG_LEVEL_ERROR;
+    } else {
+        current_log_level = LOG_LEVEL_INFO; // 默认值
+    }
+}
+
 // 获取文件名（不包含路径）
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
