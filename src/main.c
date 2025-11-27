@@ -43,24 +43,24 @@ int main(int argc, char *argv[])
     LOG_INFO("======================");
 
     // 先添加转发规则
-    if (add_forward_rule(UPSTREAM_BROKER,
+    if (add_forward_rule(DOWNSTREAM_BROKER,  // 下游 (数据源)
                          TOPIC_PROPERTY_EVENT,
-                         DOWNSTREAM_BROKER,
+                         UPSTREAM_BROKER,    // 上游 (数据目标)
                          TOPIC_PROPERTY_EVENT,
-                         forward_upstream_to_downstream_callback,
-                         "PropertyEvent_Upstream_to_Downstream")
+                         forward_downstream_to_upstream_callback,
+                         "PropertyEvent") // 下游->上游
         != 0)
     {
         LOG_ERROR("Failed to add %s->%s forward rule", UPSTREAM_BROKER, DOWNSTREAM_BROKER);
         return 1;
     }
 
-    if (add_forward_rule(DOWNSTREAM_BROKER,
+    if (add_forward_rule(UPSTREAM_BROKER,    // 上游 (数据源)
                          TOPIC_COMMAND,
-                         UPSTREAM_BROKER,
+                         DOWNSTREAM_BROKER,  // 下游 (数据目标)
                          TOPIC_COMMAND,
-                         forward_downstream_to_upstream_callback,
-                         "Command_Downstream_to_Upstream")
+                         forward_upstream_to_downstream_callback,
+                         "CommandEvent") // 上游->下游
         != 0)
     {
         LOG_ERROR("Failed to add %s->%s forward rule", DOWNSTREAM_BROKER, UPSTREAM_BROKER);

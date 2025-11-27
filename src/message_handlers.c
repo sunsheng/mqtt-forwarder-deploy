@@ -10,8 +10,8 @@
 
 #define MAX_MESSAGE_SIZE (1024 * 1024)
 
-// 上游到下游转发回调 (属性事件转发)
-void forward_upstream_to_downstream_callback(mqtt_client_t                  *source,
+// 下游到上游转发回调 (属性事件转发: 下游->上游)
+void forward_downstream_to_upstream_callback(mqtt_client_t                  *source,
                                             mqtt_client_t                  *target,
                                             const struct mosquitto_message *message)
 {
@@ -63,8 +63,8 @@ void forward_upstream_to_downstream_callback(mqtt_client_t                  *sou
     cJSON_Delete(wrapper);
 }
 
-// 下游到上游转发回调 (指令转发)
-void forward_downstream_to_upstream_callback(mqtt_client_t                  *source,
+// 上游到下游转发回调 (指令转发: 上游->下游)
+void forward_upstream_to_downstream_callback(mqtt_client_t                  *source,
                                             mqtt_client_t                  *target,
                                             const struct mosquitto_message *message)
 {
