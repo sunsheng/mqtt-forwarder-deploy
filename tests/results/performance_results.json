@@ -1,26 +1,26 @@
 {
   "throughput_tests": [
     {
-      "sent": 100,
-      "received": 100,
-      "duration": 0.21562838554382324,
-      "throughput": 463.7608343994047,
+      "sent": 200,
+      "received": 200,
+      "duration": 0.3303711414337158,
+      "throughput": 605.3797530016013,
       "loss_rate": 0.0,
       "scenario": "\u8f7b\u8d1f\u8f7d"
     },
     {
-      "sent": 1000,
-      "received": 1000,
-      "duration": 1.259441614151001,
-      "throughput": 794.0026665500548,
+      "sent": 2000,
+      "received": 2000,
+      "duration": 2.408785581588745,
+      "throughput": 830.2939104612518,
       "loss_rate": 0.0,
       "scenario": "\u4e2d\u7b49\u8d1f\u8f7d"
     },
     {
-      "sent": 5000,
-      "received": 5000,
-      "duration": 5.8623340129852295,
-      "throughput": 852.9026133490286,
+      "sent": 10000,
+      "received": 10000,
+      "duration": 11.601066589355469,
+      "throughput": 861.9897078407839,
       "loss_rate": 0.0,
       "scenario": "\u91cd\u8d1f\u8f7d"
     }

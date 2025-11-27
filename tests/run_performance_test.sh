@@ -5,20 +5,14 @@ set -e
 echo "启动测试环境..."
 cd "$(dirname "$0")"
 
-# 按顺序启动服务
-echo "启动 MQTT brokers..."
-docker compose -f docker-compose.test.yml up -d mqtt-broker-upstream mqtt-broker-downstream
-
-echo "等待 MQTT brokers 启动..."
-sleep 3
-
-echo "启动 mqtt-forwarder..."
+# 启动所有服务，depends_on 会自动管理启动顺序
+echo "启动所有服务..."
 docker compose -f docker-compose.test.yml up -d mqtt-forwarder
 
-echo "等待 mqtt-forwarder 启动..."
-sleep 2
+echo "等待服务启动完成..."
+sleep 5
 
-docker compose -f docker-compose.test.yml logs
+docker compose -f docker-compose.test.yml logs --tail=15 mqtt-forwarder
 
 echo "最终服务状态:"
 docker compose -f docker-compose.test.yml ps

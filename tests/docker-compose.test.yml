@@ -3,14 +3,29 @@ services:
     image: eclipse-mosquitto:2.0
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
 
   mqtt-broker-downstream:
     image: eclipse-mosquitto:2.0
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
 
   mqtt-forwarder:
     build: ..
+    depends_on:
+      mqtt-broker-upstream:
+        condition: service_healthy
+      mqtt-broker-downstream:
+        condition: service_healthy
     volumes:
       - ./perf_config.json:/etc/mqtt-forwarder.json
     command: ["/usr/local/bin/mqtt_forwarder", "-c", "/etc/mqtt-forwarder.json"]
@@ -19,8 +34,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
-          cpus: '0.5'
+          memory: 512M
+          cpus: '2.0'
 
   performance-test:
     build:
@@ -33,11 +48,6 @@ services:
       - DOWNSTREAM_BROKER=mqtt-broker-downstream
     profiles:
       - test
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-          cpus: '0.3'
 
   unit-test:
     build: ..
