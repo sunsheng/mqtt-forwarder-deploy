@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     cmake \
     ninja-build \
+    pkg-config \
     libmosquitto-dev \
     libcjson-dev \
     && rm -rf /var/lib/apt/lists/*
