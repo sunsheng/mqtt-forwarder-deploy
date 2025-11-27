@@ -1,44 +1,41 @@
 # MQTT Forwarder
 
-MQTT message forwarding service with multiple implementation variants.
+MQTT message forwarding service with format conversion between application and external systems.
 
 ## Quick Start
 
 ```bash
-# Build all versions
+# Build
 mkdir build && cd build
 cmake ..
 make
 
-# Run modular version (recommended)
+# Run
 ./modular/mqtt_forwarder_modular
 ```
-
-## Versions
-
-- **modular/**: Modular architecture with multi-rule forwarding and thread safety
-- **legacy/**: Single-file traditional implementation  
-- **paho/**: Paho async library version with auto-reconnect
-
-## Dependencies
-
-- libmosquitto
-- libcjson
-- paho-mqtt3a (for paho version)
 
 ## Docker
 
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build
-
-# Or use the run script
-./docker-run.sh
 ```
 
-## Build Options
+## Configuration
 
-```bash
-# Build specific version only
-cmake -DBUILD_MODULAR=ON -DBUILD_LEGACY=OFF -DBUILD_PAHO=OFF ..
-```
+Configure via environment variables:
+
+- `SOURCE_BROKER` - Application MQTT Broker (default: 192.168.4.112)
+- `TARGET_BROKER` - External system MQTT Broker (default: 192.168.6.10)
+- `MQTT_PORT` - MQTT port (default: 1883)
+- `TOPIC_PROPERTY_EVENT` - Property/event topic (default: /ge/web/#)
+- `TOPIC_COMMAND` - Command topic (default: /gc/web/#)
+
+## Data Flow
+
+Application (SOURCE_BROKER) → Format Conversion → External System (TARGET_BROKER)
+
+## Dependencies
+
+- libmosquitto
+- libcjson

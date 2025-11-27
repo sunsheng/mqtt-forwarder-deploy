@@ -2,12 +2,16 @@ version: '3.8'
 
 services:
   mqtt-forwarder:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
+    build: .
     container_name: mqtt-forwarder
     restart: unless-stopped
     network_mode: host
+    environment:
+      - SOURCE_BROKER=192.168.4.112  # 应用端MQTT Broker
+      - TARGET_BROKER=192.168.6.10   # 外部系统MQTT Broker
+      - MQTT_PORT=1883
+      - TOPIC_PROPERTY_EVENT=/ge/web/#
+      - TOPIC_COMMAND=/gc/web/#
     logging:
       driver: "json-file"
       options:

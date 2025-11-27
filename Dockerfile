@@ -14,12 +14,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /src
 COPY . .
 
-# 构建项目 - Release版本，只构建modular
-RUN cmake -B build -G Ninja \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_MODULAR=ON \
-    -DBUILD_LEGACY=OFF \
-    -DBUILD_PAHO=OFF && \
+# 构建项目 - Release版本
+RUN cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && \
     cmake --build build --target mqtt_forwarder_modular
 
 # 运行阶段
