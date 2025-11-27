@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 构建镜像
-docker build -t mqtt-forwarder:latest .
+docker build -f Dockerfile.dev -t mqtt-forwarder:latest .
 
 docker rm -f mqtt-forwarder
 
