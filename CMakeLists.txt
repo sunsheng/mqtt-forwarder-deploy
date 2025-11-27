@@ -13,12 +13,8 @@ include_directories(src)
 include_directories(${MOSQUITTO_INCLUDE_DIRS})
 include_directories(${CJSON_INCLUDE_DIRS})
 
-# Source files - explicitly listed for better caching
-set(SOURCES
-    src/main.c
-    src/mqtt_engine.c
-    src/message_handlers.c
-)
+# Source files
+file(GLOB SOURCES "src/*.c")
 
 # Create executable
 add_executable(mqtt_forwarder ${SOURCES})

@@ -1,7 +1,7 @@
 # 构建阶段
 FROM debian:12-slim AS build
 
-# 安装构建依赖（单独层，便于缓存）
+# 安装构建依赖
 RUN apt-get update && apt-get install -y \
     gcc \
     cmake \
@@ -13,17 +13,12 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /src
 
-# 先复制构建配置文件（变化较少，利于缓存）
-COPY CMakeLists.txt ./
-
-# 配置构建环境（缓存cmake配置）
-RUN cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-
-# 复制源代码（变化较频繁，放在后面）
-COPY src/ ./src/
+# 复制所有文件
+COPY . .
 
 # 构建项目
-RUN cmake --build build --target mqtt_forwarder
+RUN cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build --target mqtt_forwarder
 
 # 运行阶段 - 精简镜像
 FROM debian:12-slim AS runtime
