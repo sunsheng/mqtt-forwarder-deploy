@@ -11,8 +11,8 @@
 #include "mqtt_engine.h"
 
 // 全局客户端引用
-static mqtt_client_t *client_a = NULL;
-static mqtt_client_t *client_b = NULL;
+static mqtt_client_t *upstream_client = NULL;
+static mqtt_client_t *downstream_client = NULL;
 static volatile int   running  = 1;
 
 // 信号处理
@@ -47,8 +47,8 @@ int main(int argc, char *argv[])
                          TOPIC_PROPERTY_EVENT,
                          DOWNSTREAM_BROKER,
                          TOPIC_PROPERTY_EVENT,
-                         forward_a_to_b_callback,
-                         "PropertyEvent_A_to_B")
+                         forward_upstream_to_downstream_callback,
+                         "PropertyEvent_Upstream_to_Downstream")
         != 0)
     {
         LOG_ERROR("Failed to add %s->%s forward rule", UPSTREAM_BROKER, DOWNSTREAM_BROKER);
@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
                          TOPIC_COMMAND,
                          UPSTREAM_BROKER,
                          TOPIC_COMMAND,
-                         forward_b_to_a_callback,
-                         "Command_B_to_A")
+                         forward_downstream_to_upstream_callback,
+                         "Command_Downstream_to_Upstream")
         != 0)
     {
         LOG_ERROR("Failed to add %s->%s forward rule", DOWNSTREAM_BROKER, UPSTREAM_BROKER);
@@ -68,10 +68,10 @@ int main(int argc, char *argv[])
     }
 
     // 后创建MQTT客户端 (会自动连接)
-    client_a = mqtt_connect(UPSTREAM_BROKER, MQTT_PORT);
-    client_b = mqtt_connect(DOWNSTREAM_BROKER, MQTT_PORT);
+    upstream_client = mqtt_connect(UPSTREAM_BROKER, MQTT_PORT);
+    downstream_client = mqtt_connect(DOWNSTREAM_BROKER, MQTT_PORT);
 
-    if (!client_a || !client_b)
+    if (!upstream_client || !downstream_client)
     {
         LOG_ERROR("Failed to create MQTT clients");
         return 1;
