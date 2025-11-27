@@ -22,22 +22,7 @@ jobs:
       with:
         python-version: '3.9'
     
-    - name: Pull Docker image
-      run: docker pull ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt-forwarder:latest
-    
-    - name: Start test environment
-      run: |
-        cd tests
-        docker compose -f docker-compose.test.yml up -d
-        sleep 10
-    
     - name: Run MQTT benchmark tests
       run: |
         cd tests
         python3 mqtt_benchmark.py
-    
-    - name: Cleanup containers
-      if: always()
-      run: |
-        cd tests
-        docker compose -f docker-compose.test.yml down -v --remove-orphans || true
