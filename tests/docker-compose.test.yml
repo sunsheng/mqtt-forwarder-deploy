@@ -39,7 +39,7 @@ services:
       dockerfile: Dockerfile.test
     depends_on:
       mqtt-forwarder:
-        condition: service_healthy
+        condition: service_started
     volumes:
       - ./results:/tests/results
     environment:
