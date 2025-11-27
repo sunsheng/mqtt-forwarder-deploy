@@ -10,7 +10,7 @@ docker compose -f docker-compose.test.yml up -d mqtt-broker-upstream mqtt-broker
 
 # 等待服务健康检查通过 - 详细状态显示
 echo "等待服务启动..."
-timeout 120 bash -c '
+timeout 180 bash -c '
   while true; do
     echo "检查服务状态..."
     
@@ -35,12 +35,20 @@ timeout 120 bash -c '
       if [[ ! "$service_status" =~ "healthy" ]]; then
         echo "--- $service 状态: $service_status ---"
         echo "最近日志:"
-        docker compose -f docker-compose.test.yml logs --tail=10 $service
+        docker compose -f docker-compose.test.yml logs --tail=15 $service
+        
+        # 如果是mqtt-forwarder，额外检查进程状态
+        if [ "$service" = "mqtt-forwarder" ]; then
+          echo "检查容器内进程:"
+          docker compose -f docker-compose.test.yml exec -T $service ps aux || echo "无法执行ps命令"
+          echo "检查配置文件:"
+          docker compose -f docker-compose.test.yml exec -T $service ls -la /etc/mqtt-forwarder.json || echo "配置文件不存在"
+        fi
         echo ""
       fi
     done
     
-    sleep 5
+    sleep 8
   done
 '
 

@@ -28,13 +28,15 @@ services:
         condition: service_healthy
     volumes:
       - ./perf_config.json:/etc/mqtt-forwarder.json
+    command: ["/usr/local/bin/mqtt_forwarder", "-c", "/etc/mqtt-forwarder.json"]
     environment:
       - LOG_LEVEL=DEBUG
     healthcheck:
-      test: ["CMD", "sh", "-c", "ps aux | grep mqtt_forwarder | grep -v grep"]
-      interval: 3s
-      timeout: 2s
-      retries: 5
+      test: ["CMD", "sh", "-c", "pgrep mqtt_forwarder > /dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
     deploy:
       resources:
         limits:

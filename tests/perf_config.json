@@ -1,5 +1,5 @@
 {
-  "log_level": "info",
+  "log_level": "debug",
   "mqtt": {
     "port": 1883,
     "keepalive": 60,
