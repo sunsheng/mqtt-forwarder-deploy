@@ -1,0 +1,29 @@
+{
+  "log_level": "debug",
+  "mqtt": {
+    "port": 1883,
+    "keepalive": 60,
+    "qos": 0,
+    "retain": false,
+    "clean_session": true
+  },
+  "clients": [
+    {
+      "name": "test_client",
+      "ip": "127.0.0.1",
+      "port": 1883,
+      "client_id": "test_client"
+    }
+  ],
+  "rules": [
+    {
+      "name": "invalid_rule",
+      "description": "无效规则 - 缺少source",
+      "target": {
+        "client": "test_client",
+        "topic": "/test/#"
+      },
+      "callback": "EventCall",
+      "enabled": true
+    }
+  ]

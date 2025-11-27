@@ -10,14 +10,14 @@
   "clients": [
     {
       "name": "upstream",
-      "ip": "127.0.0.1",
-      "port": 1884,
+      "ip": "mqtt-broker-upstream",
+      "port": 1883,
       "client_id": "mqtt_forwarder_upstream"
     },
     {
       "name": "downstream", 
-      "ip": "127.0.0.1",
-      "port": 1885,
+      "ip": "mqtt-broker-downstream",
+      "port": 1883,
       "client_id": "mqtt_forwarder_downstream"
     }
   ],

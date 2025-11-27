@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  mqtt-broker-upstream:
+    image: eclipse-mosquitto:2.0
+    ports:
+      - "1884:1883"
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "test"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  mqtt-broker-downstream:
+    image: eclipse-mosquitto:2.0
+    ports:
+      - "1885:1883"
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "test", "-m", "test"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  mqtt-forwarder:
+    build: ..
+    depends_on:
+      mqtt-broker-upstream:
+        condition: service_healthy
+      mqtt-broker-downstream:
+        condition: service_healthy
+    volumes:
+      - ./perf_config.json:/etc/mqtt-forwarder.json
+    environment:
+      - LOG_LEVEL=DEBUG
+    healthcheck:
+      test: ["CMD", "pgrep", "mqtt_forwarder"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  performance-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      mqtt-forwarder:
+        condition: service_healthy
+    volumes:
+      - ./results:/tests/results
+    environment:
+      - UPSTREAM_BROKER=mqtt-broker-upstream
+      - DOWNSTREAM_BROKER=mqtt-broker-downstream
+    profiles:
+      - test
+
+  unit-test:
+    build: ..
+    volumes:
+      - .:/tests
+    command: /tests/run_tests.sh
+    profiles:
+      - test
+
+networks:
+  default:
+    name: mqtt-test-network
