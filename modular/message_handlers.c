@@ -22,13 +22,23 @@ void forward_a_to_b_callback(mqtt_client_t                  *source,
         return;
     }
 
+    // 从topic中提取设备ID (最后一个/后面的值)
+    const char *device_id = strrchr(message->topic, '/');
+    if (!device_id || !*(device_id + 1))
+    {
+        LOG_ERROR("Failed to extract device ID from topic: %s", message->topic);
+        cJSON_Delete(original_data);
+        return;
+    }
+    device_id++; // 跳过'/'
+
     cJSON *wrapper = cJSON_CreateObject();
     cJSON_AddItemToObject(wrapper, "data", original_data);
     cJSON_AddStringToObject(wrapper, "operationType", JSON_OPERATION_TYPE);
     cJSON_AddStringToObject(wrapper, "projectID", JSON_PROJECT_ID);
     cJSON_AddStringToObject(wrapper, "requestType", JSON_REQUEST_TYPE);
     cJSON_AddNumberToObject(wrapper, "serialNo", JSON_SERIAL_NO);
-    cJSON_AddStringToObject(wrapper, "webtalkID", JSON_WEBTALK_ID);
+    cJSON_AddStringToObject(wrapper, "webtalkID", device_id);
 
     char *message_buffer = cJSON_PrintUnformatted(wrapper);
     if (!message_buffer)

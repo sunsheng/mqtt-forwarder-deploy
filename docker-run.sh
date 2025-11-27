@@ -11,3 +11,6 @@ docker run -d \
   --restart unless-stopped \
   --network host \
   mqtt-forwarder:latest
+
+# 查看日志
+docker logs mqtt-forwarder -f

@@ -33,10 +33,13 @@ FROM docker.1ms.run/library/debian:12-slim
 RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources && \
     sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources
 
-# 安装运行时依赖
+# 安装运行时依赖和设置时区
 RUN apt-get update && apt-get install -y \
     libmosquitto1 \
     libcjson1 \
+    tzdata \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制可执行文件
