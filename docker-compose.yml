@@ -7,8 +7,8 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
-      - UPSTREAM_BROKER=192.168.4.112    # 上游MQTT Broker（应用系统，数据源）
-      - DOWNSTREAM_BROKER=192.168.6.10   # 下游MQTT Broker（外部系统，数据目标）
+      - UPSTREAM_BROKER=192.168.4.112    # 上游MQTT Broker（数据源）
+      - DOWNSTREAM_BROKER=192.168.6.10   # 下游MQTT Broker（数据目标）
       - MQTT_PORT=1883
       - TOPIC_PROPERTY_EVENT=/ge/web/#
       - TOPIC_COMMAND=/gc/web/#

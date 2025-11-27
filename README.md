@@ -1,6 +1,6 @@
 # MQTT Forwarder
 
-高性能MQTT消息转发服务，实现应用系统与外部系统之间的消息格式转换和路由。
+高性能MQTT消息转发服务，实现上下游系统之间的消息格式转换和路由。
 
 ## 功能特性
 
@@ -45,8 +45,8 @@ docker run -d \
 
 | 环境变量 | 默认值 | 说明 |
 |---------|--------|------|
-| `UPSTREAM_BROKER` | 192.168.4.112 | 上游MQTT Broker地址（应用系统，数据源） |
-| `DOWNSTREAM_BROKER` | 192.168.6.10 | 下游MQTT Broker地址（外部系统，数据目标） |
+| `UPSTREAM_BROKER` | 192.168.4.112 | 上游MQTT Broker地址（数据源） |
+| `DOWNSTREAM_BROKER` | 192.168.6.10 | 下游MQTT Broker地址（数据目标） |
 | `MQTT_PORT` | 1883 | MQTT端口 |
 | `TOPIC_PROPERTY_EVENT` | /ge/web/# | 属性事件主题 |
 | `TOPIC_COMMAND` | /gc/web/# | 指令主题 |
@@ -56,19 +56,19 @@ docker run -d \
 
 ### 属性事件转发 (Property Events)
 ```
-外部系统 (/ge/web/#) → JSON格式转换 → 应用系统 (/ge/web/#)
+下游系统 (/ge/web/#) → JSON格式转换 → 上游系统 (/ge/web/#)
 DOWNSTREAM_BROKER:1883     包装处理      UPSTREAM_BROKER:1883
 ```
 
 ### 指令转发 (Commands)  
 ```
-应用系统 (/gc/web/#) → JSON格式解析 → 外部系统 (/gc/web/#)
+上游系统 (/gc/web/#) → JSON格式解析 → 下游系统 (/gc/web/#)
 UPSTREAM_BROKER:1883     格式转换      DOWNSTREAM_BROKER:1883
 ```
 
 ### 消息处理流程
-1. **属性事件**: 外部系统发布设备状态/属性变化 → 转发器接收并转换格式 → 推送到应用系统
-2. **控制指令**: 应用系统发布控制命令 → 转发器接收并解析 → 转发到外部系统执行
+1. **属性事件**: 下游系统发布设备状态/属性变化 → 转发器接收并转换格式 → 推送到上游系统
+2. **控制指令**: 上游系统发布控制命令 → 转发器接收并解析 → 转发到下游系统执行
 3. **格式转换**: 自动处理JSON消息的包装和解包，确保两端系统兼容
 
 ## 本地开发
