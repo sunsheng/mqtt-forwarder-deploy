@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mqtt-forwarder:
-    image: mqtt-forwarder:latest
+    image: ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt-forwarder:latest
     container_name: mqtt-forwarder
     restart: unless-stopped
     network_mode: host

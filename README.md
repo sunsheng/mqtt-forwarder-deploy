@@ -37,7 +37,7 @@ docker run -d \
   --name mqtt-forwarder \
   --restart unless-stopped \
   --network host \
-  -v $(pwd)/config.json:/app/config.json \
+  -v $(pwd)/config.json:/etc/mqtt-forwarder.json \
   -e LOG_LEVEL=DEBUG \
   ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt-forwarder:latest
 ```
