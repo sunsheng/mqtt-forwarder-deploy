@@ -34,3 +34,10 @@ jobs:
         path: |
           tests/logs/
           /tmp/docker-compose-logs.txt
+    
+    - name: Cleanup containers
+      if: always()
+      run: |
+        cd tests
+        docker compose -f docker-compose.test.yml down -v --remove-orphans || true
+        docker system prune -f || true
