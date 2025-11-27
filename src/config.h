@@ -13,7 +13,7 @@
 // 系统限制
 #define MAX_CLIENTS 10
 #define MAX_FORWARD_RULES 20
-#define MAX_MESSAGE_SIZE 8192
+#define MAX_MESSAGE_SIZE 1048576
 #define RECONNECT_DELAY 5
 
 // JSON包装常量
