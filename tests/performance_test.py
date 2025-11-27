@@ -234,16 +234,28 @@ def main():
     test = PerformanceTest()
     results = {}
     
-    # 吞吐量测试
-    print("=" * 50)
-    throughput_result = test.run_throughput_test(1000, 100)
-    results['throughput'] = throughput_result
-    print(f"吞吐量测试结果:")
-    print(f"  发送: {throughput_result['sent']} 条")
-    print(f"  接收: {throughput_result['received']} 条")
-    print(f"  耗时: {throughput_result['duration']:.2f} 秒")
-    print(f"  吞吐量: {throughput_result['throughput']:.2f} 消息/秒")
-    print(f"  丢失率: {throughput_result['loss_rate']:.2f}%")
+    # 多场景吞吐量测试
+    test_scenarios = [
+        (100, 50, "轻负载"),
+        (1000, 100, "中等负载"),
+        (5000, 200, "重负载")
+    ]
+    
+    results['throughput_tests'] = []
+    
+    for message_count, message_size, scenario_name in test_scenarios:
+        print("=" * 50)
+        print(f"吞吐量测试 - {scenario_name}")
+        throughput_result = test.run_throughput_test(message_count, message_size)
+        throughput_result['scenario'] = scenario_name
+        results['throughput_tests'].append(throughput_result)
+        
+        print(f"  场景: {scenario_name}")
+        print(f"  发送: {throughput_result['sent']} 条")
+        print(f"  接收: {throughput_result['received']} 条")
+        print(f"  耗时: {throughput_result['duration']:.2f} 秒")
+        print(f"  吞吐量: {throughput_result['throughput']:.2f} 消息/秒")
+        print(f"  丢失率: {throughput_result['loss_rate']:.2f}%")
     
     # 延迟测试
     print("=" * 50)
@@ -262,24 +274,36 @@ def main():
     with open('results/performance_results.json', 'w') as f:
         json.dump(results, f, indent=2)
     
-    # 生成报告
+    # 生成详细报告
     with open('results/performance_report.md', 'w') as f:
         f.write("# MQTT Forwarder Performance Test Report\n\n")
-        f.write("## Throughput Test\n")
-        f.write(f"- Messages sent: {throughput_result['sent']}\n")
-        f.write(f"- Messages received: {throughput_result['received']}\n")
-        f.write(f"- Duration: {throughput_result['duration']:.2f} seconds\n")
-        f.write(f"- Throughput: {throughput_result['throughput']:.2f} messages/second\n")
-        f.write(f"- Loss rate: {throughput_result['loss_rate']:.2f}%\n\n")
+        f.write(f"**测试时间**: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"**测试环境**: Docker容器\n")
+        f.write(f"**Broker配置**: {upstream_broker}:{upstream_port} ↔ {downstream_broker}:{downstream_port}\n\n")
+        
+        f.write("## 吞吐量测试结果\n\n")
+        f.write("| 场景 | 消息数 | 消息大小 | 发送数 | 接收数 | 耗时(s) | 吞吐量(msg/s) | 丢失率(%) |\n")
+        f.write("|------|--------|----------|--------|--------|---------|---------------|----------|\n")
+        
+        for result in results['throughput_tests']:
+            f.write(f"| {result['scenario']} | {result.get('message_count', 'N/A')} | {result.get('message_size', 'N/A')}B | ")
+            f.write(f"{result['sent']} | {result['received']} | {result['duration']:.2f} | ")
+            f.write(f"{result['throughput']:.2f} | {result['loss_rate']:.2f} |\n")
         
         if latency_result:
-            f.write("## Latency Test\n")
-            f.write(f"- Samples: {latency_result['samples']}\n")
-            f.write(f"- Average latency: {latency_result['avg_latency_ms']:.2f} ms\n")
-            f.write(f"- Min latency: {latency_result['min_latency_ms']:.2f} ms\n")
-            f.write(f"- Max latency: {latency_result['max_latency_ms']:.2f} ms\n")
-            f.write(f"- P95 latency: {latency_result['p95_latency_ms']:.2f} ms\n")
-            f.write(f"- P99 latency: {latency_result['p99_latency_ms']:.2f} ms\n")
+            f.write("\n## 延迟测试结果\n\n")
+            f.write(f"- **样本数**: {latency_result['samples']}\n")
+            f.write(f"- **平均延迟**: {latency_result['avg_latency_ms']:.2f} ms\n")
+            f.write(f"- **最小延迟**: {latency_result['min_latency_ms']:.2f} ms\n")
+            f.write(f"- **最大延迟**: {latency_result['max_latency_ms']:.2f} ms\n")
+            f.write(f"- **P95延迟**: {latency_result['p95_latency_ms']:.2f} ms\n")
+            f.write(f"- **P99延迟**: {latency_result['p99_latency_ms']:.2f} ms\n")
+        
+        f.write("\n## 性能评估\n\n")
+        best_throughput = max(results['throughput_tests'], key=lambda x: x['throughput'])
+        f.write(f"- **最佳吞吐量**: {best_throughput['throughput']:.2f} 消息/秒 ({best_throughput['scenario']})\n")
+        if latency_result:
+            f.write(f"- **延迟评级**: {'优秀' if latency_result['avg_latency_ms'] < 10 else '良好' if latency_result['avg_latency_ms'] < 50 else '一般'}\n")
     
     print("=" * 50)
     print("测试完成，结果已保存到 results/ 目录")
