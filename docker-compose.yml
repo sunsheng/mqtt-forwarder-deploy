@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   mqtt-forwarder:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     container_name: mqtt-forwarder
     restart: unless-stopped
     network_mode: host
