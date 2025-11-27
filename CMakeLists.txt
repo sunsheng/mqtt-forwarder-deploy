@@ -9,6 +9,7 @@ pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
 pkg_check_modules(CJSON REQUIRED libcjson)
 
 # Include directories
+include_directories(src)
 include_directories(${MOSQUITTO_INCLUDE_DIRS})
 include_directories(${CJSON_INCLUDE_DIRS})
 
