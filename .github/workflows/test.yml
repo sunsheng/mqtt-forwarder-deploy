@@ -34,6 +34,22 @@ jobs:
           tests/logs/
           /tmp/docker-compose-logs.txt
     
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-results
+        path: tests/results/
+    
+    - name: Upload logs on failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: container-logs
+        path: |
+          tests/logs/
+          /tmp/docker-compose-logs.txt
+    
     - name: Cleanup containers
       if: always()
       run: |
