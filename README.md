@@ -50,6 +50,7 @@ docker run -d \
 | `MQTT_PORT` | 1883 | MQTT端口 |
 | `TOPIC_PROPERTY_EVENT` | /ge/web/# | 属性事件主题 |
 | `TOPIC_COMMAND` | /gc/web/# | 指令主题 |
+| `LOG_LEVEL` | INFO | 日志级别（DEBUG/INFO/ERROR） |
 
 ## 数据流向
 

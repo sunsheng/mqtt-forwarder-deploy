@@ -27,7 +27,7 @@ typedef struct
 
 
 // 日志级别定义
-log_level_t current_log_level = LOG_LEVEL_INFO;
+log_level_t current_log_level;
 
 // 函数声明
 mqtt_client_t *find_client(const char *ip);

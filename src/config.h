@@ -36,12 +36,18 @@ static inline const char* get_topic_command() {
     return env ? env : DEFAULT_TOPIC_COMMAND;
 }
 
+static inline const char* get_log_level() {
+    const char* env = getenv("LOG_LEVEL");
+    return env ? env : "INFO";
+}
+
 // 配置宏定义
 #define UPSTREAM_BROKER get_upstream_broker()
 #define DOWNSTREAM_BROKER get_downstream_broker()
 #define MQTT_PORT get_mqtt_port()
 #define TOPIC_PROPERTY_EVENT get_topic_property_event()
 #define TOPIC_COMMAND get_topic_command()
+#define LOG_LEVEL get_log_level()
 
 // 系统配置
 #define MAX_CLIENTS 10

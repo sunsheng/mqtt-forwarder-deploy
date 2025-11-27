@@ -28,6 +28,9 @@ void signal_handler(int sig)
 
 int main(int argc, char *argv[])
 {
+    // 初始化日志级别
+    init_log_level();
+    
     // 初始化mosquitto库
     mosquitto_lib_init();
     srand(time(NULL));

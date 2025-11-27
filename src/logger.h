@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
 
 // 日志级别
 typedef enum
@@ -13,7 +14,27 @@ typedef enum
     LOG_LEVEL_ERROR = 2
 } log_level_t;
 
+// 全局日志级别变量
 extern log_level_t current_log_level;
+
+// 日志级别初始化函数
+static inline void init_log_level() {
+    const char* level_str = getenv("LOG_LEVEL");
+    if (!level_str) {
+        current_log_level = LOG_LEVEL_INFO;
+        return;
+    }
+    
+    if (strcmp(level_str, "DEBUG") == 0) {
+        current_log_level = LOG_LEVEL_DEBUG;
+    } else if (strcmp(level_str, "INFO") == 0) {
+        current_log_level = LOG_LEVEL_INFO;
+    } else if (strcmp(level_str, "ERROR") == 0) {
+        current_log_level = LOG_LEVEL_ERROR;
+    } else {
+        current_log_level = LOG_LEVEL_INFO; // 默认值
+    }
+}
 
 // 获取文件名（不包含路径）
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)

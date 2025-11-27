@@ -12,6 +12,7 @@ services:
       - MQTT_PORT=1883
       - TOPIC_PROPERTY_EVENT=/ge/web/#
       - TOPIC_COMMAND=/gc/web/#
+      - LOG_LEVEL=INFO
     logging:
       driver: "json-file"
       options:
