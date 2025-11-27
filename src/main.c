@@ -41,12 +41,16 @@ static void print_usage(const char *program_name) {
     printf("Usage: %s [OPTIONS]\n", program_name);
     printf("Options:\n");
     printf("  -c, --config=FILE    Configuration file path\n");
+    printf("  --validate-only      Validate configuration and exit\n");
     printf("  -h, --help          Show this help message\n");
 }
+
+static int validate_only = 0;
 
 static int parse_arguments(int argc, char *argv[]) {
     static struct option long_options[] = {
         {"config", required_argument, 0, 'c'},
+        {"validate-only", no_argument, 0, 'v'},
         {"help", no_argument, 0, 'h'},
         {0, 0, 0, 0}
     };
@@ -56,6 +60,9 @@ static int parse_arguments(int argc, char *argv[]) {
         switch (c) {
             case 'c':
                 config_file = strdup(optarg);
+                break;
+            case 'v':
+                validate_only = 1;
                 break;
             case 'h':
                 print_usage(argv[0]);
@@ -111,6 +118,13 @@ int main(int argc, char *argv[]) {
 
     // 设置日志级别 (优先级: 环境变量 > JSON配置 > 默认值)
     set_log_level_from_config(global_config.log_level);
+    
+    // 如果只是验证配置，则退出
+    if (validate_only) {
+        LOG_INFO("Configuration validation passed");
+        free_config(&global_config);
+        return 0;
+    }
     
     LOG_INFO("MQTT Message Forwarder");
     LOG_INFO("======================");

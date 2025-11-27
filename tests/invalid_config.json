@@ -1,0 +1,16 @@
+{
+  "log_level": "debug",
+  "mqtt": {
+    "port": 99999,
+    "keepalive": 60
+  },
+  "clients": [
+    {
+      "name": "invalid_client",
+      "ip": "999.999.999.999",
+      "port": 1883,
+      "client_id": ""
+    }
+  ],
+  "rules": []
+}

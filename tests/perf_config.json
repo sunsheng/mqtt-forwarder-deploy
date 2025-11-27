@@ -1,0 +1,40 @@
+{
+  "log_level": "info",
+  "mqtt": {
+    "port": 1883,
+    "keepalive": 60,
+    "qos": 0,
+    "retain": false,
+    "clean_session": true
+  },
+  "clients": [
+    {
+      "name": "upstream",
+      "ip": "127.0.0.1",
+      "port": 1884,
+      "client_id": "mqtt_forwarder_upstream"
+    },
+    {
+      "name": "downstream", 
+      "ip": "127.0.0.1",
+      "port": 1885,
+      "client_id": "mqtt_forwarder_downstream"
+    }
+  ],
+  "rules": [
+    {
+      "name": "perf_test",
+      "description": "性能测试规则",
+      "source": {
+        "client": "downstream",
+        "topic": "/test/perf/#"
+      },
+      "target": {
+        "client": "upstream", 
+        "topic": "/test/perf/#"
+      },
+      "callback": "EventCall",
+      "enabled": true
+    }
+  ]
+}

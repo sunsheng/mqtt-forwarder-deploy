@@ -9,10 +9,4 @@
 #define MAX_MESSAGE_SIZE 1048576
 #define RECONNECT_DELAY 5
 
-// JSON包装常量
-#define JSON_OPERATION_TYPE "uploadRtd"
-#define JSON_PROJECT_ID "X2View"
-#define JSON_REQUEST_TYPE "wrequest"
-#define JSON_SERIAL_NO 0
-
 #endif

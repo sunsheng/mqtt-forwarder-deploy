@@ -8,6 +8,12 @@
 #include "config.h"
 #include "logger.h"
 
+// JSON包装常量
+#define EVENT_JSON_OPERATION_TYPE "uploadRtd"
+#define EVENT_JSON_PROJECT_ID "X2View"
+#define EVENT_JSON_REQUEST_TYPE "wrequest"
+#define EVENT_JSON_SERIAL_NO 0
+
 // 事件转发回调 (属性事件转发: 下游->上游)
 void EventCall(mqtt_client_t                  *source,
                mqtt_client_t                  *target,
@@ -32,10 +38,10 @@ void EventCall(mqtt_client_t                  *source,
 
     cJSON *wrapper = cJSON_CreateObject();
     cJSON_AddItemToObject(wrapper, "data", original_data);
-    cJSON_AddStringToObject(wrapper, "operationType", JSON_OPERATION_TYPE);
-    cJSON_AddStringToObject(wrapper, "projectID", JSON_PROJECT_ID);
-    cJSON_AddStringToObject(wrapper, "requestType", JSON_REQUEST_TYPE);
-    cJSON_AddNumberToObject(wrapper, "serialNo", JSON_SERIAL_NO);
+    cJSON_AddStringToObject(wrapper, "operationType", EVENT_JSON_OPERATION_TYPE);
+    cJSON_AddStringToObject(wrapper, "projectID", EVENT_JSON_PROJECT_ID);
+    cJSON_AddStringToObject(wrapper, "requestType", EVENT_JSON_REQUEST_TYPE);
+    cJSON_AddNumberToObject(wrapper, "serialNo", EVENT_JSON_SERIAL_NO);
     cJSON_AddStringToObject(wrapper, "webtalkID", device_id);
 
     char *message_buffer = cJSON_PrintUnformatted(wrapper);

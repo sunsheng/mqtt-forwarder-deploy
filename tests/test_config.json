@@ -1,0 +1,40 @@
+{
+  "log_level": "debug",
+  "mqtt": {
+    "port": 1883,
+    "keepalive": 60,
+    "qos": 0,
+    "retain": false,
+    "clean_session": true
+  },
+  "clients": [
+    {
+      "name": "test_upstream",
+      "ip": "127.0.0.1",
+      "port": 1883,
+      "client_id": "test_upstream_client"
+    },
+    {
+      "name": "test_downstream",
+      "ip": "127.0.0.1", 
+      "port": 1884,
+      "client_id": "test_downstream_client"
+    }
+  ],
+  "rules": [
+    {
+      "name": "test_rule",
+      "description": "测试规则",
+      "source": {
+        "client": "test_downstream",
+        "topic": "/test/#"
+      },
+      "target": {
+        "client": "test_upstream",
+        "topic": "/test/#"
+      },
+      "callback": "EventCall",
+      "enabled": true
+    }
+  ]
+}
