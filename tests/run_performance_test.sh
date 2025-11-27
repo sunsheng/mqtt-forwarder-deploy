@@ -36,15 +36,6 @@ timeout 180 bash -c '
         echo "--- $service 状态: $service_status ---"
         echo "最近日志:"
         docker compose -f docker-compose.test.yml logs --tail=15 $service
-        
-        # 如果是mqtt-forwarder，额外检查进程状态
-        if [ "$service" = "mqtt-forwarder" ]; then
-          echo "检查容器内进程:"
-          docker compose -f docker-compose.test.yml exec -T $service ps aux || echo "无法执行ps命令"
-          echo "检查配置文件:"
-          docker compose -f docker-compose.test.yml exec -T $service ls -la /etc/mqtt-forwarder.json || echo "配置文件不存在"
-        fi
-        echo ""
       fi
     done
     

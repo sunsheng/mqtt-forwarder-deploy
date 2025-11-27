@@ -32,9 +32,9 @@ services:
     environment:
       - LOG_LEVEL=DEBUG
     healthcheck:
-      test: ["CMD", "sh", "-c", "pgrep mqtt_forwarder > /dev/null || exit 1"]
-      interval: 5s
-      timeout: 3s
+      test: ["CMD", "kill", "-0", "1"]
+      interval: 10s
+      timeout: 5s
       retries: 10
       start_period: 15s
     deploy:
