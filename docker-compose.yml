@@ -2,13 +2,13 @@ version: '3.8'
 
 services:
   mqtt-forwarder:
-    image: ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt-forwarder:latest
+    image: ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt_forwarder:latest
     container_name: mqtt-forwarder
     restart: unless-stopped
     network_mode: host
     environment:
-      - SOURCE_BROKER=192.168.4.112  # 应用端MQTT Broker
-      - TARGET_BROKER=192.168.6.10   # 外部系统MQTT Broker
+      - UPSTREAM_BROKER=192.168.6.10    # 上游MQTT Broker（外部系统，数据源）
+      - DOWNSTREAM_BROKER=192.168.4.112  # 下游MQTT Broker（应用系统，数据目标）
       - MQTT_PORT=1883
       - TOPIC_PROPERTY_EVENT=/ge/web/#
       - TOPIC_COMMAND=/gc/web/#

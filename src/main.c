@@ -40,33 +40,33 @@ int main(int argc, char *argv[])
     LOG_INFO("======================");
 
     // 先添加转发规则
-    if (add_forward_rule(BROKER_A,
+    if (add_forward_rule(UPSTREAM_BROKER,
                          TOPIC_PROPERTY_EVENT,
-                         BROKER_B,
+                         DOWNSTREAM_BROKER,
                          TOPIC_PROPERTY_EVENT,
                          forward_a_to_b_callback,
                          "PropertyEvent_A_to_B")
         != 0)
     {
-        LOG_ERROR("Failed to add %s->%s forward rule", BROKER_A, BROKER_B);
+        LOG_ERROR("Failed to add %s->%s forward rule", UPSTREAM_BROKER, DOWNSTREAM_BROKER);
         return 1;
     }
 
-    if (add_forward_rule(BROKER_B,
+    if (add_forward_rule(DOWNSTREAM_BROKER,
                          TOPIC_COMMAND,
-                         BROKER_A,
+                         UPSTREAM_BROKER,
                          TOPIC_COMMAND,
                          forward_b_to_a_callback,
                          "Command_B_to_A")
         != 0)
     {
-        LOG_ERROR("Failed to add %s->%s forward rule", BROKER_B, BROKER_A);
+        LOG_ERROR("Failed to add %s->%s forward rule", DOWNSTREAM_BROKER, UPSTREAM_BROKER);
         return 1;
     }
 
     // 后创建MQTT客户端 (会自动连接)
-    client_a = mqtt_connect(BROKER_A, MQTT_PORT);
-    client_b = mqtt_connect(BROKER_B, MQTT_PORT);
+    client_a = mqtt_connect(UPSTREAM_BROKER, MQTT_PORT);
+    client_b = mqtt_connect(DOWNSTREAM_BROKER, MQTT_PORT);
 
     if (!client_a || !client_b)
     {

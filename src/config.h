@@ -4,21 +4,21 @@
 #include <stdlib.h>
 
 // 默认配置值
-#define DEFAULT_SOURCE_BROKER "192.168.4.112"    // 数据来源MQTT Broker (应用端)
-#define DEFAULT_TARGET_BROKER "192.168.6.10"     // 数据目标MQTT Broker (外部系统)
+#define DEFAULT_UPSTREAM_BROKER "192.168.6.10"      // 上游MQTT Broker (外部系统，数据源)
+#define DEFAULT_DOWNSTREAM_BROKER "192.168.4.112"   // 下游MQTT Broker (应用系统，数据目标)
 #define DEFAULT_MQTT_PORT 1883
 #define DEFAULT_TOPIC_PROPERTY_EVENT "/ge/web/#"
 #define DEFAULT_TOPIC_COMMAND "/gc/web/#"
 
 // 环境变量支持的配置获取函数
-static inline const char* get_source_broker() {
-    const char* env = getenv("SOURCE_BROKER");
-    return env ? env : DEFAULT_SOURCE_BROKER;
+static inline const char* get_upstream_broker() {
+    const char* env = getenv("UPSTREAM_BROKER");
+    return env ? env : DEFAULT_UPSTREAM_BROKER;
 }
 
-static inline const char* get_target_broker() {
-    const char* env = getenv("TARGET_BROKER");
-    return env ? env : DEFAULT_TARGET_BROKER;
+static inline const char* get_downstream_broker() {
+    const char* env = getenv("DOWNSTREAM_BROKER");
+    return env ? env : DEFAULT_DOWNSTREAM_BROKER;
 }
 
 static inline int get_mqtt_port() {
@@ -36,16 +36,12 @@ static inline const char* get_topic_command() {
     return env ? env : DEFAULT_TOPIC_COMMAND;
 }
 
-// 新的清晰命名
-#define SOURCE_BROKER get_source_broker()
-#define TARGET_BROKER get_target_broker()
+// 配置宏定义
+#define UPSTREAM_BROKER get_upstream_broker()
+#define DOWNSTREAM_BROKER get_downstream_broker()
 #define MQTT_PORT get_mqtt_port()
 #define TOPIC_PROPERTY_EVENT get_topic_property_event()
 #define TOPIC_COMMAND get_topic_command()
-
-// 旧名称兼容（逐步废弃）
-#define BROKER_B get_source_broker()  // 应用端
-#define BROKER_A get_target_broker()  // 外部系统
 
 // 系统配置
 #define MAX_CLIENTS 10

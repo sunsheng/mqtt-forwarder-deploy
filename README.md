@@ -36,8 +36,8 @@ docker run -d \
   --name mqtt-forwarder \
   --restart unless-stopped \
   --network host \
-  -e SOURCE_BROKER=192.168.4.112 \
-  -e TARGET_BROKER=192.168.6.10 \
+  -e UPSTREAM_BROKER=192.168.6.10 \
+  -e DOWNSTREAM_BROKER=192.168.4.112 \
   ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt_forwarder:latest
 ```
 
@@ -45,8 +45,8 @@ docker run -d \
 
 | 环境变量 | 默认值 | 说明 |
 |---------|--------|------|
-| `SOURCE_BROKER` | 192.168.4.112 | 应用端MQTT Broker地址 |
-| `TARGET_BROKER` | 192.168.6.10 | 外部系统MQTT Broker地址 |
+| `UPSTREAM_BROKER` | 192.168.6.10 | 上游MQTT Broker地址（外部系统，数据源） |
+| `DOWNSTREAM_BROKER` | 192.168.4.112 | 下游MQTT Broker地址（应用系统，数据目标） |
 | `MQTT_PORT` | 1883 | MQTT端口 |
 | `TOPIC_PROPERTY_EVENT` | /ge/web/# | 属性事件主题 |
 | `TOPIC_COMMAND` | /gc/web/# | 指令主题 |
@@ -55,19 +55,19 @@ docker run -d \
 
 ### 属性事件转发 (Property Events)
 ```
-应用系统 (/ge/web/#) → JSON格式转换 → 外部系统 (/ge/web/#)
-SOURCE_BROKER:1883     包装处理      TARGET_BROKER:1883
+外部系统 (/ge/web/#) → JSON格式转换 → 应用系统 (/ge/web/#)
+UPSTREAM_BROKER:1883     包装处理      DOWNSTREAM_BROKER:1883
 ```
 
 ### 指令转发 (Commands)  
 ```
-外部系统 (/gc/web/#) → JSON格式解析 → 应用系统 (/gc/web/#)
-TARGET_BROKER:1883     格式转换      SOURCE_BROKER:1883
+应用系统 (/gc/web/#) → JSON格式解析 → 外部系统 (/gc/web/#)
+DOWNSTREAM_BROKER:1883     格式转换      UPSTREAM_BROKER:1883
 ```
 
 ### 消息处理流程
-1. **属性事件**: 应用系统发布设备状态/属性变化 → 转发器接收并转换格式 → 推送到外部系统
-2. **控制指令**: 外部系统发布控制命令 → 转发器接收并解析 → 转发到应用系统执行
+1. **属性事件**: 外部系统发布设备状态/属性变化 → 转发器接收并转换格式 → 推送到应用系统
+2. **控制指令**: 应用系统发布控制命令 → 转发器接收并解析 → 转发到外部系统执行
 3. **格式转换**: 自动处理JSON消息的包装和解包，确保两端系统兼容
 
 ## 本地开发
