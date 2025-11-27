@@ -42,8 +42,15 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         context: .
+        target: runtime
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: |
+          type=gha,scope=build
+          type=gha,scope=runtime
+        cache-to: |
+          type=gha,mode=max,scope=build
+          type=gha,mode=max,scope=runtime
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
