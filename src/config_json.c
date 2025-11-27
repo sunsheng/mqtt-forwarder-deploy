@@ -327,11 +327,11 @@ int validate_config(const config_t *config) {
     for (int i = 0; i < config->client_count; i++) {
         const client_config_t *client = &config->clients[i];
         
-        // 验证IP地址
-        if (!is_valid_ip(client->ip)) {
-            LOG_ERROR("Invalid IP address for client '%s': %s", client->name, client->ip);
-            return -1;
-        }
+        // 验证IP地址 - 注释掉以支持主机名
+        // if (!is_valid_ip(client->ip)) {
+        //     LOG_ERROR("Invalid IP address for client '%s': %s", client->name, client->ip);
+        //     return -1;
+        // }
         
         // 验证端口
         if (client->port < 1 || client->port > 65535) {
