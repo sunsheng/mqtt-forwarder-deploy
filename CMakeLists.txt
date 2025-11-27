@@ -1,18 +1,25 @@
 cmake_minimum_required(VERSION 3.10)
-project(mqtt-forwarder C)
+project(mqtt-forwarder)
 
 set(CMAKE_C_STANDARD 99)
 
-# 查找依赖库
-find_library(MOSQUITTO_LIB mosquitto REQUIRED)
-find_library(CJSON_LIB cjson REQUIRED)
+# Find required packages
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(MOSQUITTO REQUIRED libmosquitto)
+pkg_check_modules(CJSON REQUIRED libcjson)
 
-# 设置通用头文件目录
-include_directories(common)
+# Include directories
+include_directories(${MOSQUITTO_INCLUDE_DIRS})
+include_directories(${CJSON_INCLUDE_DIRS})
 
-# 添加modular子项目
-add_subdirectory(modular)
+# Source files
+file(GLOB SOURCES "src/*.c")
 
-# 安装配置
-install(TARGETS mqtt_forwarder_modular 
-        DESTINATION bin)
+# Create executable
+add_executable(mqtt_forwarder ${SOURCES})
+
+# Link libraries
+target_link_libraries(mqtt_forwarder ${MOSQUITTO_LIBRARIES} ${CJSON_LIBRARIES})
+
+# Compiler flags
+target_compile_options(mqtt_forwarder PRIVATE ${MOSQUITTO_CFLAGS_OTHER} ${CJSON_CFLAGS_OTHER})

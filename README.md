@@ -53,9 +53,22 @@ docker run -d \
 
 ## 数据流向
 
+### 属性事件转发 (Property Events)
 ```
-应用系统 (SOURCE_BROKER) → 格式转换 → 外部系统 (TARGET_BROKER)
+应用系统 (/ge/web/#) → JSON格式转换 → 外部系统 (/ge/web/#)
+SOURCE_BROKER:1883     包装处理      TARGET_BROKER:1883
 ```
+
+### 指令转发 (Commands)  
+```
+外部系统 (/gc/web/#) → JSON格式解析 → 应用系统 (/gc/web/#)
+TARGET_BROKER:1883     格式转换      SOURCE_BROKER:1883
+```
+
+### 消息处理流程
+1. **属性事件**: 应用系统发布设备状态/属性变化 → 转发器接收并转换格式 → 推送到外部系统
+2. **控制指令**: 外部系统发布控制命令 → 转发器接收并解析 → 转发到应用系统执行
+3. **格式转换**: 自动处理JSON消息的包装和解包，确保两端系统兼容
 
 ## 本地开发
 
