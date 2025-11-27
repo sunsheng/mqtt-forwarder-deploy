@@ -1,27 +1,12 @@
 services:
   mqtt-broker-upstream:
     image: eclipse-mosquitto:2.0
-    healthcheck:
-      test: ["CMD", "sh", "-c", "mosquitto_sub -h localhost -t '$$SYS/broker/uptime' -C 1 -W 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 3
 
   mqtt-broker-downstream:
     image: eclipse-mosquitto:2.0
-    healthcheck:
-      test: ["CMD", "sh", "-c", "mosquitto_sub -h localhost -t '$$SYS/broker/uptime' -C 1 -W 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 3
 
   mqtt-forwarder:
     build: ..
-    depends_on:
-      mqtt-broker-upstream:
-        condition: service_healthy
-      mqtt-broker-downstream:
-        condition: service_healthy
     volumes:
       - ./perf_config.json:/etc/mqtt-forwarder.json
     command: ["/usr/local/bin/mqtt_forwarder", "-c", "/etc/mqtt-forwarder.json"]
@@ -37,9 +22,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.test
-    depends_on:
-      mqtt-forwarder:
-        condition: service_started
     volumes:
       - ./results:/tests/results
     environment:
