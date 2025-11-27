@@ -4,6 +4,8 @@ on:
   workflow_dispatch:  # 手动触发
   pull_request:
     branches: [ main ]
+  push:
+    branches: [ main ]
 
 jobs:
   test:
@@ -12,43 +14,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Run all tests with docker-compose
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Build and start test environment
       run: |
         cd tests
-        chmod +x run_performance_test.sh
-        ./run_performance_test.sh
+        docker compose -f docker-compose.test.yml up -d --build
+        sleep 10
     
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: performance-results
-        path: tests/results/
-    
-    - name: Upload logs on failure
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: container-logs
-        path: |
-          tests/logs/
-          /tmp/docker-compose-logs.txt
-    
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: performance-results
-        path: tests/results/
-    
-    - name: Upload logs on failure
-      uses: actions/upload-artifact@v4
-      if: failure()
-      with:
-        name: container-logs
-        path: |
-          tests/logs/
-          /tmp/docker-compose-logs.txt
+    - name: Run MQTT benchmark tests
+      run: |
+        cd tests
+        python3 mqtt_benchmark.py
     
     - name: Cleanup containers
       if: always()

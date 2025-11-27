@@ -31,31 +31,6 @@ services:
     command: ["/usr/local/bin/mqtt_forwarder", "-c", "/etc/mqtt-forwarder.json"]
     environment:
       - LOG_LEVEL=DEBUG
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '2.0'
-
-  performance-test:
-    build:
-      context: .
-      dockerfile: Dockerfile.test
-    volumes:
-      - ./results:/tests/results
-    environment:
-      - UPSTREAM_BROKER=mqtt-broker-upstream
-      - DOWNSTREAM_BROKER=mqtt-broker-downstream
-    profiles:
-      - test
-
-  unit-test:
-    build: ..
-    volumes:
-      - .:/tests
-    command: /tests/run_tests.sh
-    profiles:
-      - test
 
 networks:
   default:

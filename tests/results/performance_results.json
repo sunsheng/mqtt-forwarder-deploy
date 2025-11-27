@@ -3,24 +3,24 @@
     {
       "sent": 200,
       "received": 200,
-      "duration": 0.3303711414337158,
-      "throughput": 605.3797530016013,
+      "duration": 0.3271934986114502,
+      "throughput": 611.259089342434,
       "loss_rate": 0.0,
       "scenario": "\u8f7b\u8d1f\u8f7d"
     },
     {
       "sent": 2000,
       "received": 2000,
-      "duration": 2.408785581588745,
-      "throughput": 830.2939104612518,
+      "duration": 2.4055769443511963,
+      "throughput": 831.4013836457916,
       "loss_rate": 0.0,
       "scenario": "\u4e2d\u7b49\u8d1f\u8f7d"
     },
     {
       "sent": 10000,
       "received": 10000,
-      "duration": 11.601066589355469,
-      "throughput": 861.9897078407839,
+      "duration": 11.595068454742432,
+      "throughput": 862.435615540498,
       "loss_rate": 0.0,
       "scenario": "\u91cd\u8d1f\u8f7d"
     }

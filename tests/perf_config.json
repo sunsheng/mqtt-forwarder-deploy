@@ -23,15 +23,15 @@
   ],
   "rules": [
     {
-      "name": "perf_test",
-      "description": "性能测试规则",
+      "name": "ge_web_test",
+      "description": "/ge/web/action测试规则",
       "source": {
         "client": "downstream",
-        "topic": "/test/perf/#"
+        "topic": "/ge/web/#"
       },
       "target": {
         "client": "upstream", 
-        "topic": "/test/perf/#"
+        "topic": "/ge/web/#"
       },
       "callback": "EventCall",
       "enabled": true
