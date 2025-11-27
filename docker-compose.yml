@@ -10,8 +10,3 @@ services:
       - ./config.json:/app/config.json
     environment:
       - LOG_LEVEL=INFO    # 日志级别，优先级高于JSON配置
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"

@@ -8,8 +8,6 @@
 #include "config.h"
 #include "logger.h"
 
-#define MAX_MESSAGE_SIZE (1024 * 1024)
-
 // 事件转发回调 (属性事件转发: 下游->上游)
 void EventCall(mqtt_client_t                  *source,
                mqtt_client_t                  *target,

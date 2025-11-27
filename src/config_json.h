@@ -1,7 +1,7 @@
 #ifndef CONFIG_JSON_H
 #define CONFIG_JSON_H
 
-#include <cjson/cjson.h>
+#include <cjson/cJSON.h>
 
 // MQTT配置结构
 typedef struct {
