@@ -47,7 +47,8 @@ void EventCall(mqtt_client_t                  *source,
     }
 
     int ret = mosquitto_publish(
-        target->mosq, NULL, message->topic, strlen(message_buffer), message_buffer, 0, false);
+        target->mosq, NULL, message->topic, strlen(message_buffer), message_buffer, 
+        message->qos, message->retain);
     if (ret == MOSQ_ERR_SUCCESS)
     {
         LOG_DEBUG("Forwarded %s->%s: %s", source->ip, target->ip, message_buffer);
@@ -139,7 +140,8 @@ void CommandCall(mqtt_client_t                  *source,
     }
 
     int ret = mosquitto_publish(
-        target->mosq, NULL, message->topic, strlen(message_buffer), message_buffer, 0, false);
+        target->mosq, NULL, message->topic, strlen(message_buffer), message_buffer, 
+        message->qos, message->retain);
     if (ret == MOSQ_ERR_SUCCESS)
     {
         LOG_INFO("Converted and forwarded %s->%s: %s", source->ip, target->ip, message_buffer);

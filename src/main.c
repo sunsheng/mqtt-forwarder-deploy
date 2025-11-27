@@ -102,6 +102,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // 验证配置
+    if (validate_config(&global_config) != 0) {
+        LOG_ERROR("Configuration validation failed");
+        free_config(&global_config);
+        return 1;
+    }
+
     // 设置日志级别 (优先级: 环境变量 > JSON配置 > 默认值)
     set_log_level_from_config(global_config.log_level);
     
@@ -142,8 +149,8 @@ int main(int argc, char *argv[]) {
         client_config_t *target_client = &global_config.clients[target_idx];
 
         // 添加转发规则
-        if (add_forward_rule(source_client->ip, rule->source_topic,
-                           target_client->ip, rule->target_topic,
+        if (add_forward_rule(source_client->ip, source_client->port, rule->source_topic,
+                           target_client->ip, target_client->port, rule->target_topic,
                            callback, rule->name) == 0) {
             LOG_INFO("Added rule: %s (%s)", rule->name, rule->description);
         } else {
@@ -154,7 +161,7 @@ int main(int argc, char *argv[]) {
     // 连接所有客户端
     for (int i = 0; i < global_config.client_count; i++) {
         client_config_t *client_cfg = &global_config.clients[i];
-        mqtt_client_t *client = mqtt_connect(client_cfg->ip, client_cfg->port);
+        mqtt_client_t *client = mqtt_connect(client_cfg, &global_config.mqtt);
         if (!client) {
             LOG_ERROR("Failed to connect to %s:%d", client_cfg->ip, client_cfg->port);
             continue;

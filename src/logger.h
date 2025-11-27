@@ -61,15 +61,22 @@ static inline void set_log_level_from_config(const char* json_level) {
 // 获取文件名（不包含路径）
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
+// 颜色定义
+#define COLOR_RESET   "\033[0m"
+#define COLOR_DEBUG   "\033[36m"    // 青色
+#define COLOR_INFO    "\033[32m"    // 绿色
+#define COLOR_ERROR   "\033[31m"    // 红色
+
 // 通用日志宏
-#define LOG(level, level_str, fmt, ...)                                         \
+#define LOG(level, level_str, color, fmt, ...)                                  \
     do                                                                          \
     {                                                                           \
         if (current_log_level <= level)                                         \
         {                                                                       \
             time_t     now     = time(NULL);                                    \
             struct tm *tm_info = localtime(&now);                               \
-            printf("[%04d-%02d-%02d %02d:%02d:%02d] [%s] [%s:%d %s] " fmt "\n", \
+            printf("%s[%04d-%02d-%02d %02d:%02d:%02d] [%s] [%s:%d %s] " fmt "%s\n", \
+                   color,                                                       \
                    tm_info->tm_year + 1900,                                     \
                    tm_info->tm_mon + 1,                                         \
                    tm_info->tm_mday,                                            \
@@ -80,13 +87,14 @@ static inline void set_log_level_from_config(const char* json_level) {
                    __FILENAME__,                                                \
                    __LINE__,                                                    \
                    __func__,                                                    \
-                   ##__VA_ARGS__);                                              \
+                   ##__VA_ARGS__,                                               \
+                   COLOR_RESET);                                                \
             fflush(stdout);                                                     \
         }                                                                       \
     } while (0)
 
-#define LOG_INFO(fmt, ...) LOG(LOG_LEVEL_INFO, "INFO", fmt, ##__VA_ARGS__)
-#define LOG_ERROR(fmt, ...) LOG(LOG_LEVEL_ERROR, "ERROR", fmt, ##__VA_ARGS__)
-#define LOG_DEBUG(fmt, ...) LOG(LOG_LEVEL_DEBUG, "DEBUG", fmt, ##__VA_ARGS__)
+#define LOG_INFO(fmt, ...) LOG(LOG_LEVEL_INFO, "INFO", COLOR_INFO, fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...) LOG(LOG_LEVEL_ERROR, "ERROR", COLOR_ERROR, fmt, ##__VA_ARGS__)
+#define LOG_DEBUG(fmt, ...) LOG(LOG_LEVEL_DEBUG, "DEBUG", COLOR_DEBUG, fmt, ##__VA_ARGS__)
 
 #endif

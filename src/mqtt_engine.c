@@ -30,7 +30,7 @@ typedef struct
 log_level_t current_log_level;
 
 // 函数声明
-mqtt_client_t *find_client(const char *ip);
+mqtt_client_t *find_client(const char *ip, int port);
 
 
 
@@ -50,7 +50,8 @@ void on_connect(struct mosquitto *mosq, void *userdata, int result)
         
         for (int i = 0; i < rule_count; i++)
         {
-            if (strcmp(forward_rules[i].source_ip, client->ip) == 0)
+            if (strcmp(forward_rules[i].source_ip, client->ip) == 0 && 
+                forward_rules[i].source_port == client->port)
             {
                 // 检查新主题是否会被现有主题覆盖
                 bool should_add = true;
@@ -172,7 +173,8 @@ void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_m
     // 遍历转发规则，找到匹配的规则
     for (int i = 0; i < rule_count; i++)
     {
-        if (strcmp(forward_rules[i].source_ip, source_client->ip) == 0)
+        if (strcmp(forward_rules[i].source_ip, source_client->ip) == 0 && 
+            forward_rules[i].source_port == source_client->port)
         {
             // 检查主题是否匹配
             bool matches = false;
@@ -183,7 +185,7 @@ void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_m
                 LOG_DEBUG("Rule matched: %s", forward_rules[i].rule_name);
 
                 // 查找目标客户端
-                mqtt_client_t *target_client = find_client(forward_rules[i].target_ip);
+                mqtt_client_t *target_client = find_client(forward_rules[i].target_ip, forward_rules[i].target_port);
                 if (!target_client || !target_client->mosq || !target_client->connected)
                 {
                     LOG_ERROR("Target client %s not found or not connected",
@@ -203,11 +205,11 @@ void on_message(struct mosquitto *mosq, void *userdata, const struct mosquitto_m
 }
 
 // 查找现有客户端
-mqtt_client_t *find_client(const char *ip)
+mqtt_client_t *find_client(const char *ip, int port)
 {
     for (int i = 0; i < client_count; i++)
     {
-        if (strcmp(clients[i].ip, ip) == 0)
+        if (strcmp(clients[i].ip, ip) == 0 && clients[i].port == port)
         {
             return &clients[i];
         }
@@ -216,15 +218,17 @@ mqtt_client_t *find_client(const char *ip)
 }
 
 // 创建并连接客户端
-mqtt_client_t *mqtt_connect(const char *ip, int port)
+mqtt_client_t *mqtt_connect(const client_config_t *client_cfg, const mqtt_config_t *mqtt_cfg)
 {
+    if (!client_cfg || !mqtt_cfg) {
+        LOG_ERROR("Invalid client or mqtt configuration");
+        return NULL;
+    }
+
     // 查找现有客户端
-    for (int i = 0; i < client_count; i++)
-    {
-        if (strcmp(clients[i].ip, ip) == 0)
-        {
-            return &clients[i];
-        }
+    mqtt_client_t *existing = find_client(client_cfg->ip, client_cfg->port);
+    if (existing) {
+        return existing;
     }
 
     // 创建新客户端
@@ -235,24 +239,15 @@ mqtt_client_t *mqtt_connect(const char *ip, int port)
     }
 
     mqtt_client_t *client = &clients[client_count];
-    snprintf(client->ip, sizeof(client->ip), "%s", ip);
+    snprintf(client->ip, sizeof(client->ip), "%s", client_cfg->ip);
+    snprintf(client->client_id, sizeof(client->client_id), "%s", client_cfg->client_id);
     client->connected = 0;
+    client->port = client_cfg->port;
 
-    // 生成6位随机字符 (a-z0-9)
-    const char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
-    char       random_id[7];
-    for (int i = 0; i < 6; i++)
-    {
-        random_id[i] = charset[rand() % (sizeof(charset) - 1)];
-    }
-    random_id[6] = '\0';
-
-    snprintf(client->client_id, sizeof(client->client_id), "forwarder_%s_%s", ip, random_id);
-
-    client->mosq = mosquitto_new(client->client_id, true, client);
+    client->mosq = mosquitto_new(client->client_id, mqtt_cfg->clean_session, client);
     if (!client->mosq)
     {
-        LOG_ERROR("Failed to create mosquitto client for %s", ip);
+        LOG_ERROR("Failed to create mosquitto client for %s", client_cfg->ip);
         return NULL;
     }
 
@@ -262,28 +257,44 @@ mqtt_client_t *mqtt_connect(const char *ip, int port)
     mosquitto_message_callback_set(client->mosq, on_message);
     mosquitto_reconnect_delay_set(client->mosq, 1, RECONNECT_DELAY, true);
 
-    // 异步连接 - 连接失败不影响客户端创建
-    int ret = mosquitto_connect_async(client->mosq, ip, port, 30);
+    // 设置用户名和密码
+    if (mqtt_cfg->username && mqtt_cfg->password) {
+        int ret = mosquitto_username_pw_set(client->mosq, mqtt_cfg->username, mqtt_cfg->password);
+        if (ret != MOSQ_ERR_SUCCESS) {
+            LOG_ERROR("Failed to set username/password for %s: %s", 
+                     client_cfg->ip, mosquitto_strerror(ret));
+            mosquitto_destroy(client->mosq);
+            return NULL;
+        }
+        LOG_INFO("Set authentication for %s", client_cfg->ip);
+    }
+
+    // 异步连接
+    int ret = mosquitto_connect_async(client->mosq, client_cfg->ip, client_cfg->port, mqtt_cfg->keepalive);
     if (ret != MOSQ_ERR_SUCCESS)
     {
-        LOG_ERROR("Failed to initiate connection to %s: %s", ip, mosquitto_strerror(ret));
+        LOG_ERROR("Failed to initiate connection to %s:%d: %s", 
+                 client_cfg->ip, client_cfg->port, mosquitto_strerror(ret));
         mosquitto_destroy(client->mosq);
-        return NULL;  // 连接失败时不增加 client_count
+        return NULL;
     }
     else
     {
-        LOG_INFO("Connecting to %s...", ip);
+        LOG_INFO("Connecting to %s:%d...", client_cfg->ip, client_cfg->port);
     }
+    
     mosquitto_loop_start(client->mosq);
 
     client_count++;
-    LOG_INFO("Created client for %s with ID: %s", ip, client->client_id);
+    LOG_INFO("Created client for %s with ID: %s", client_cfg->ip, client->client_id);
     return client;
 }
 
 int add_forward_rule(const char *source_ip,
+                     int source_port,
                      const char *source_topic,
                      const char *target_ip,
+                     int target_port,
                      const char *target_topic,
                      void (*callback)(mqtt_client_t                  *source,
                                       mqtt_client_t                  *target,
@@ -298,9 +309,11 @@ int add_forward_rule(const char *source_ip,
 
     forward_rule_t *rule = &forward_rules[rule_count];
 
-    // 存储IP地址
+    // 存储IP地址和端口
     snprintf(rule->source_ip, sizeof(rule->source_ip), "%s", source_ip);
+    rule->source_port = source_port;
     snprintf(rule->target_ip, sizeof(rule->target_ip), "%s", target_ip);
+    rule->target_port = target_port;
     snprintf(rule->source_topic, sizeof(rule->source_topic), "%s", source_topic);
     snprintf(rule->target_topic, sizeof(rule->target_topic), "%s", target_topic);
     rule->message_callback = callback;

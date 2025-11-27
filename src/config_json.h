@@ -18,7 +18,7 @@ typedef struct {
 typedef struct {
     char name[64];
     char ip[64];
-    int port;  // -1表示使用全局默认值
+    int port;  // 端口号，如果JSON中未指定则使用全局默认值
     char client_id[64];
 } client_config_t;
 
@@ -48,5 +48,6 @@ typedef struct {
 int load_config_from_file(const char *filename, config_t *config);
 void free_config(config_t *config);
 int find_client_by_name(const config_t *config, const char *name);
+int validate_config(const config_t *config);
 
 #endif

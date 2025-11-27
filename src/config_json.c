@@ -264,3 +264,147 @@ int find_client_by_name(const config_t *config, const char *name) {
     }
     return -1;
 }
+
+static int is_valid_ip(const char *ip) {
+    if (!ip) return 0;
+    
+    int a, b, c, d;
+    if (sscanf(ip, "%d.%d.%d.%d", &a, &b, &c, &d) != 4) {
+        return 0;
+    }
+    
+    return (a >= 0 && a <= 255) && (b >= 0 && b <= 255) && 
+           (c >= 0 && c <= 255) && (d >= 0 && d <= 255);
+}
+
+static int is_valid_topic(const char *topic) {
+    if (!topic || strlen(topic) == 0) return 0;
+    
+    // 检查是否包含无效字符 (MQTT规范：不能包含null字符)
+    for (const char *p = topic; *p; p++) {
+        if (*p == '\0') return 0;
+        // 允许所有可打印字符和一些特殊字符
+        if (*p < 32 && *p != '\t') return 0; // 除了tab外，不允许控制字符
+    }
+    
+    // 检查通配符使用是否正确
+    const char *hash_pos = strchr(topic, '#');
+    if (hash_pos && hash_pos[1] != '\0') {
+        return 0; // # 必须是最后一个字符
+    }
+    
+    return 1;
+}
+
+int validate_config(const config_t *config) {
+    if (!config) {
+        LOG_ERROR("Config is NULL");
+        return -1;
+    }
+    
+    // 验证MQTT配置
+    if (config->mqtt.port < 1 || config->mqtt.port > 65535) {
+        LOG_ERROR("Invalid MQTT port: %d (must be 1-65535)", config->mqtt.port);
+        return -1;
+    }
+    
+    if (config->mqtt.keepalive < 10 || config->mqtt.keepalive > 3600) {
+        LOG_ERROR("Invalid keepalive: %d (must be 10-3600 seconds)", config->mqtt.keepalive);
+        return -1;
+    }
+    
+    if (config->mqtt.qos < 0 || config->mqtt.qos > 2) {
+        LOG_ERROR("Invalid QoS: %d (must be 0-2)", config->mqtt.qos);
+        return -1;
+    }
+    
+    // 验证客户端配置
+    if (config->client_count < 1) {
+        LOG_ERROR("At least one client must be configured");
+        return -1;
+    }
+    
+    for (int i = 0; i < config->client_count; i++) {
+        const client_config_t *client = &config->clients[i];
+        
+        // 验证IP地址
+        if (!is_valid_ip(client->ip)) {
+            LOG_ERROR("Invalid IP address for client '%s': %s", client->name, client->ip);
+            return -1;
+        }
+        
+        // 验证端口
+        if (client->port < 1 || client->port > 65535) {
+            LOG_ERROR("Invalid port for client '%s': %d", client->name, client->port);
+            return -1;
+        }
+        
+        // 检查客户端名称重复
+        for (int j = i + 1; j < config->client_count; j++) {
+            if (strcmp(client->name, config->clients[j].name) == 0) {
+                LOG_ERROR("Duplicate client name: %s", client->name);
+                return -1;
+            }
+        }
+    }
+    
+    // 验证转发规则
+    if (config->rule_count < 1) {
+        LOG_ERROR("At least one rule must be configured");
+        return -1;
+    }
+    
+    for (int i = 0; i < config->rule_count; i++) {
+        const rule_config_t *rule = &config->rules[i];
+        
+        // 验证规则名称重复
+        for (int j = i + 1; j < config->rule_count; j++) {
+            if (strcmp(rule->name, config->rules[j].name) == 0) {
+                LOG_ERROR("Duplicate rule name: %s", rule->name);
+                return -1;
+            }
+        }
+        
+        // 验证客户端引用
+        if (find_client_by_name(config, rule->source_client) < 0) {
+            LOG_ERROR("Rule '%s' references unknown source client: %s", 
+                     rule->name, rule->source_client);
+            return -1;
+        }
+        
+        if (find_client_by_name(config, rule->target_client) < 0) {
+            LOG_ERROR("Rule '%s' references unknown target client: %s", 
+                     rule->name, rule->target_client);
+            return -1;
+        }
+        
+        // 验证不能自己转发给自己
+        if (strcmp(rule->source_client, rule->target_client) == 0) {
+            LOG_ERROR("Rule '%s' has same source and target client: %s", 
+                     rule->name, rule->source_client);
+            return -1;
+        }
+        
+        // 验证主题格式
+        if (!is_valid_topic(rule->source_topic)) {
+            LOG_ERROR("Rule '%s' has invalid source topic: %s", 
+                     rule->name, rule->source_topic);
+            return -1;
+        }
+        
+        if (!is_valid_topic(rule->target_topic)) {
+            LOG_ERROR("Rule '%s' has invalid target topic: %s", 
+                     rule->name, rule->target_topic);
+            return -1;
+        }
+        
+        // 验证回调函数名称
+        if (strlen(rule->callback) == 0) {
+            LOG_ERROR("Rule '%s' has empty callback", rule->name);
+            return -1;
+        }
+    }
+    
+    LOG_INFO("Configuration validation passed");
+    return 0;
+}

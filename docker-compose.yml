@@ -9,4 +9,4 @@ services:
     volumes:
       - ./config.json:/etc/mqtt-forwarder.json
     environment:
-      - LOG_LEVEL=INFO    # 日志级别，优先级高于JSON配置
+      - LOG_LEVEL=DEBUG    # 日志级别，优先级高于JSON配置

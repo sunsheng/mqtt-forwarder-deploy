@@ -5,21 +5,17 @@
     "keepalive": 60,
     "qos": 0,
     "retain": false,
-    "clean_session": true,
-    "username": null,
-    "password": null
+    "clean_session": true
   },
   "clients": [
     {
       "name": "upstream",
       "ip": "192.168.4.112",
-      "port": null,
       "client_id": "mqtt_forwarder_upstream"
     },
     {
       "name": "downstream",
       "ip": "192.168.6.10",
-      "port": null,
       "client_id": "mqtt_forwarder_downstream"
     }
   ],
