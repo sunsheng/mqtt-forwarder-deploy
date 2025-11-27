@@ -33,33 +33,54 @@ class PerformanceTest:
         """测试吞吐量"""
         print(f"开始吞吐量测试: {message_count} 条消息, 每条 {message_size} 字节")
         
-        # 设置接收客户端 - 使用v2.0 API
-        receiver = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "perf_receiver")
-        receiver.on_connect = self.on_connect
-        receiver.on_message = self.on_message
-        receiver.connect("127.0.0.1", 1884, 60)
-        receiver.loop_start()
+        # 重置计数器
+        with self.lock:
+            self.received_count = 0
+            self.sent_count = 0
+            self.received_messages = []
         
-        time.sleep(2)  # 等待连接建立
+        # 接收线程
+        def receiver_thread():
+            receiver = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "perf_receiver")
+            receiver.on_connect = self.on_connect
+            receiver.on_message = self.on_message
+            receiver.connect("127.0.0.1", 1884, 60)
+            receiver.loop_forever()
         
-        # 设置发送客户端
-        sender = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "perf_sender")
-        sender.connect("127.0.0.1", 1885, 60)
+        # 发送线程
+        def sender_thread():
+            time.sleep(2)  # 等待接收端连接
+            sender = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "perf_sender")
+            sender.connect("127.0.0.1", 1885, 60)
+            
+            # 生成测试数据
+            test_data = {"data": "x" * message_size}
+            payload = json.dumps(test_data)
+            
+            # 开始发送
+            for i in range(message_count):
+                topic = f"/test/perf/device_{i % 10}"
+                sender.publish(topic, payload)
+                with self.lock:
+                    self.sent_count += 1
+                time.sleep(0.001)  # 控制发送速率
+            
+            sender.disconnect()
         
-        # 生成测试数据
-        test_data = {"data": "x" * message_size}
-        payload = json.dumps(test_data)
+        # 启动线程
+        receiver_t = threading.Thread(target=receiver_thread, daemon=True)
+        sender_t = threading.Thread(target=sender_thread)
         
-        # 开始测试
         self.start_time = time.time()
         start_time = time.time()
         
-        for i in range(message_count):
-            topic = f"/test/perf/device_{i % 10}"
-            sender.publish(topic, payload)
-            self.sent_count += 1
-            
-        # 等待消息处理完成
+        receiver_t.start()
+        sender_t.start()
+        
+        # 等待发送完成
+        sender_t.join()
+        
+        # 等待接收完成
         timeout = 30
         while self.received_count < message_count and timeout > 0:
             time.sleep(0.1)
@@ -68,53 +89,64 @@ class PerformanceTest:
         end_time = time.time()
         duration = end_time - start_time
         
-        receiver.loop_stop()
-        receiver.disconnect()
-        sender.disconnect()
-        
         return {
             'sent': self.sent_count,
             'received': self.received_count,
             'duration': duration,
             'throughput': self.received_count / duration if duration > 0 else 0,
-            'loss_rate': (self.sent_count - self.received_count) / self.sent_count * 100
+            'loss_rate': (self.sent_count - self.received_count) / self.sent_count * 100 if self.sent_count > 0 else 0
         }
     
     def run_latency_test(self, sample_count=100):
         """测试延迟"""
         print(f"开始延迟测试: {sample_count} 个样本")
         
-        receiver = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "latency_receiver")
-        receiver.on_connect = self.on_connect
-        receiver.on_message = self.on_message
-        receiver.connect("127.0.0.1", 1884, 60)
-        receiver.loop_start()
-        
-        time.sleep(2)
-        
-        sender = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "latency_sender")
-        sender.connect("127.0.0.1", 1885, 60)
+        # 重置状态
+        with self.lock:
+            self.received_count = 0
+            self.received_messages = []
         
         latencies = []
         
+        # 接收线程
+        def receiver_thread():
+            receiver = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "latency_receiver")
+            receiver.on_connect = self.on_connect
+            receiver.on_message = self.on_message
+            receiver.connect("127.0.0.1", 1884, 60)
+            receiver.loop_forever()
+        
+        # 启动接收线程
+        receiver_t = threading.Thread(target=receiver_thread, daemon=True)
+        receiver_t.start()
+        
+        time.sleep(2)  # 等待连接建立
+        
+        # 发送端
+        sender = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "latency_sender")
+        sender.connect("127.0.0.1", 1885, 60)
+        
         for i in range(sample_count):
-            self.start_time = time.time()
-            sender.publish(f"/test/perf/latency_{i}", json.dumps({"test": i}))
+            initial_count = self.received_count
+            
+            # 记录发送时间
+            send_time = time.time()
+            sender.publish(f"/test/perf/latency_{i}", json.dumps({"test": i, "send_time": send_time}))
             
             # 等待消息接收
             timeout = 5
-            initial_count = self.received_count
             while self.received_count <= initial_count and timeout > 0:
                 time.sleep(0.001)
                 timeout -= 0.001
                 
-            if self.received_messages:
-                latencies.append(self.received_messages[-1]['latency'] * 1000)  # 转换为毫秒
+            # 计算延迟
+            if self.received_count > initial_count:
+                receive_time = time.time()
+                latency = (receive_time - send_time) * 1000  # 转换为毫秒
+                latencies.append(latency)
                 
             time.sleep(0.01)  # 避免过快发送
             
-        receiver.loop_stop()
-        receiver.disconnect()
         sender.disconnect()
         
         if latencies:
