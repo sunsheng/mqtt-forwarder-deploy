@@ -38,7 +38,7 @@ docker run -d \
   --network host \
   -e UPSTREAM_BROKER=192.168.6.10 \
   -e DOWNSTREAM_BROKER=192.168.4.112 \
-  ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt_forwarder:latest
+  ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt-forwarder:latest
 ```
 
 ## 配置说明
