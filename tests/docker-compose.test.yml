@@ -20,7 +20,7 @@ services:
       retries: 3
 
   mqtt-forwarder:
-    build: ..
+    image: ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt-forwarder:latest
     depends_on:
       mqtt-broker-upstream:
         condition: service_healthy

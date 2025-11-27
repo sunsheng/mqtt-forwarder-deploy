@@ -1,15 +1,18 @@
-name: Build and Test
+name: Test
 
 on:
   workflow_dispatch:  # 手动触发
+  workflow_run:
+    workflows: ["Build Docker Image"]
+    types:
+      - completed
   pull_request:
-    branches: [ main ]
-  push:
     branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     
     steps:
     - uses: actions/checkout@v4
@@ -19,10 +22,13 @@ jobs:
       with:
         python-version: '3.9'
     
-    - name: Build and start test environment
+    - name: Pull Docker image
+      run: docker pull ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt-forwarder:latest
+    
+    - name: Start test environment
       run: |
         cd tests
-        docker compose -f docker-compose.test.yml up -d --build
+        docker compose -f docker-compose.test.yml up -d
         sleep 10
     
     - name: Run MQTT benchmark tests
@@ -35,4 +41,3 @@ jobs:
       run: |
         cd tests
         docker compose -f docker-compose.test.yml down -v --remove-orphans || true
-        docker system prune -f || true
