@@ -40,8 +40,4 @@ RUN useradd -r -s /bin/false mqtt-forwarder
 
 USER mqtt-forwarder
 
-# 健康检查 - 检查主进程是否存在
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD kill -0 1 2>/dev/null || exit 1
-
 CMD ["/usr/local/bin/mqtt_forwarder"]
