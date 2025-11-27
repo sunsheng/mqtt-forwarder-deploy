@@ -10,15 +10,15 @@ echo "启动 MQTT brokers..."
 docker compose -f docker-compose.test.yml up -d mqtt-broker-upstream mqtt-broker-downstream
 
 echo "等待 MQTT brokers 启动..."
-sleep 20
+sleep 3
 
 echo "启动 mqtt-forwarder..."
 docker compose -f docker-compose.test.yml up -d mqtt-forwarder
 
 echo "等待 mqtt-forwarder 启动..."
-sleep 5
+sleep 2
 
-docker compose -f docker-compose.test.yml logs --tail=30 mqtt-forwarder
+docker compose -f docker-compose.test.yml logs
 
 echo "最终服务状态:"
 docker compose -f docker-compose.test.yml ps

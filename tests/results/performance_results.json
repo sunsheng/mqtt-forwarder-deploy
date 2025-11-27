@@ -1,0 +1,28 @@
+{
+  "throughput_tests": [
+    {
+      "sent": 100,
+      "received": 100,
+      "duration": 0.21562838554382324,
+      "throughput": 463.7608343994047,
+      "loss_rate": 0.0,
+      "scenario": "\u8f7b\u8d1f\u8f7d"
+    },
+    {
+      "sent": 1000,
+      "received": 1000,
+      "duration": 1.259441614151001,
+      "throughput": 794.0026665500548,
+      "loss_rate": 0.0,
+      "scenario": "\u4e2d\u7b49\u8d1f\u8f7d"
+    },
+    {
+      "sent": 5000,
+      "received": 5000,
+      "duration": 5.8623340129852295,
+      "throughput": 852.9026133490286,
+      "loss_rate": 0.0,
+      "scenario": "\u91cd\u8d1f\u8f7d"
+    }
+  ]
+}

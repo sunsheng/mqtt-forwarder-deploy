@@ -1,9 +1,13 @@
 services:
   mqtt-broker-upstream:
     image: eclipse-mosquitto:2.0
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
 
   mqtt-broker-downstream:
     image: eclipse-mosquitto:2.0
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
 
   mqtt-forwarder:
     build: ..
