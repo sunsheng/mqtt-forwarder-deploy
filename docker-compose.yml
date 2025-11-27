@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   mqtt-forwarder:
-    image: ghcr.io/sunsheng/mqtt-forwarder-deploy/mqtt-forwarder:latest
+    image: mqtt-forwarder:latest
     container_name: mqtt-forwarder
     restart: unless-stopped
     network_mode: host
     volumes:
-      - ./config.json:/app/config.json
+      - ./config.json:/etc/mqtt-forwarder.json
     environment:
       - LOG_LEVEL=INFO    # 日志级别，优先级高于JSON配置
