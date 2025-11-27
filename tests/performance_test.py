@@ -33,8 +33,8 @@ class PerformanceTest:
         """测试吞吐量"""
         print(f"开始吞吐量测试: {message_count} 条消息, 每条 {message_size} 字节")
         
-        # 设置接收客户端
-        receiver = mqtt.Client("perf_receiver")
+        # 设置接收客户端 - 修复v2.0兼容性
+        receiver = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "perf_receiver")
         receiver.on_connect = self.on_connect
         receiver.on_message = self.on_message
         receiver.connect("127.0.0.1", 1884, 60)
@@ -43,7 +43,7 @@ class PerformanceTest:
         time.sleep(2)  # 等待连接建立
         
         # 设置发送客户端
-        sender = mqtt.Client("perf_sender")
+        sender = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "perf_sender")
         sender.connect("127.0.0.1", 1885, 60)
         
         # 生成测试数据
@@ -84,7 +84,7 @@ class PerformanceTest:
         """测试延迟"""
         print(f"开始延迟测试: {sample_count} 个样本")
         
-        receiver = mqtt.Client("latency_receiver")
+        receiver = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "latency_receiver")
         receiver.on_connect = self.on_connect
         receiver.on_message = self.on_message
         receiver.connect("127.0.0.1", 1884, 60)
@@ -92,7 +92,7 @@ class PerformanceTest:
         
         time.sleep(2)
         
-        sender = mqtt.Client("latency_sender")
+        sender = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "latency_sender")
         sender.connect("127.0.0.1", 1885, 60)
         
         latencies = []
