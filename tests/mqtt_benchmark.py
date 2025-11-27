@@ -15,7 +15,6 @@ class MQTTBenchmark:
         self.sent_count = 0
         self.received_count = 0
         self.received_messages = []
-        self.lock = threading.Lock()
         self.start_time = None
         self.end_time = None
         self.max_messages = max_messages
@@ -58,8 +57,7 @@ class MQTTBenchmark:
                                        capture_output=True)
                 
                 if process.returncode == 0:
-                    with self.lock:
-                        self.sent_count = message_count
+                    self.sent_count = message_count
                 else:
                     print(f"发送错误: {process.stderr}")
                     
@@ -109,11 +107,8 @@ class MQTTBenchmark:
                                          stderr=subprocess.PIPE, text=True)
                 
                 for line in process.stdout:
-                    with self.lock:
-                        self.received_count += 1
-                        self.received_messages.append(line.strip())
-                        
-                process.wait()
+                    self.received_count += 1
+                    self.received_messages.append(line.strip())
                 
             except Exception as e:
                 print(f"接收线程错误: {e}")
