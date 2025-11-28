@@ -1,0 +1,39 @@
+# 构建阶段 - 使用Alpine减小基础镜像
+FROM alpine:3.19 AS build
+
+# 安装构建依赖
+RUN apk add --no-cache \
+    gcc \
+    g++ \
+    cmake \
+    ninja \
+    pkgconfig \
+    mosquitto-dev \
+    cjson-dev \
+    musl-dev
+
+WORKDIR /src
+
+# 先复制构建文件，利用Docker缓存
+COPY CMakeLists.txt .
+COPY src/ src/
+
+# 构建项目
+RUN cmake -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build --target mqtt_forwarder && \
+    strip build/mqtt_forwarder
+
+# 运行阶段 - 使用Alpine最小化
+FROM alpine:3.19 AS runtime
+
+# 只安装必要的运行时依赖
+RUN apk add --no-cache mosquitto-libs cjson && \
+    adduser -D -s /sbin/nologin mqtt-forwarder
+
+# 复制可执行文件
+COPY --from=build /src/build/mqtt_forwarder /usr/local/bin/
+
+USER mqtt-forwarder
+
+CMD ["/usr/local/bin/mqtt_forwarder"]
