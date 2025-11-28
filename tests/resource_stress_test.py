@@ -7,13 +7,12 @@ import threading
 import time
 import os
 import uuid
-import psutil
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 
 class ResourceStressTest:
     def __init__(self):
-        self.container_name = "mqtt-forwarder"
+        self.container_name = "tests-mqtt-forwarder-1"
         self.message_file = "stress_messages.txt"
         
     def generate_messages(self, count):
@@ -54,31 +53,29 @@ class ResourceStressTest:
         try:
             # 获取容器统计信息
             cmd = ['docker', 'stats', '--no-stream', '--format', 
-                   'table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}', 
+                   '{{.Container}},{{.CPUPerc}},{{.MemUsage}},{{.MemPerc}}', 
                    self.container_name]
             
             result = subprocess.run(cmd, capture_output=True, text=True)
-            if result.returncode == 0:
-                lines = result.stdout.strip().split('\n')
-                if len(lines) > 1:  # 跳过标题行
-                    stats_line = lines[1]
-                    parts = stats_line.split('\t')
-                    if len(parts) >= 4:
-                        cpu_percent = parts[1].replace('%', '')
-                        mem_usage = parts[2]  # 格式: "used / limit"
-                        mem_percent = parts[3].replace('%', '')
-                        
-                        return {
-                            'cpu_percent': float(cpu_percent) if cpu_percent != '--' else 0.0,
-                            'memory_usage': mem_usage,
-                            'memory_percent': float(mem_percent) if mem_percent != '--' else 0.0
-                        }
+            if result.returncode == 0 and result.stdout.strip():
+                line = result.stdout.strip()
+                parts = line.split(',')
+                if len(parts) >= 4:
+                    cpu_percent = parts[1].replace('%', '').strip()
+                    mem_usage = parts[2].strip()  # 格式: "used / limit"
+                    mem_percent = parts[3].replace('%', '').strip()
+                    
+                    return {
+                        'cpu_percent': float(cpu_percent) if cpu_percent != '--' and cpu_percent else 0.0,
+                        'memory_usage': mem_usage,
+                        'memory_percent': float(mem_percent) if mem_percent != '--' and mem_percent else 0.0
+                    }
         except Exception as e:
             print(f"获取容器统计信息失败: {e}")
         
         return {'cpu_percent': 0.0, 'memory_usage': 'N/A', 'memory_percent': 0.0}
     
-    def monitor_resources(self, duration, interval=1):
+    def monitor_resources(self, duration, interval=0.5):
         """监控资源使用情况"""
         stats_history = []
         start_time = time.time()
@@ -87,6 +84,7 @@ class ResourceStressTest:
             stats = self.get_container_stats()
             stats['timestamp'] = time.time() - start_time
             stats_history.append(stats)
+            print(f"监控: CPU {stats['cpu_percent']:.1f}%, 内存 {stats['memory_percent']:.1f}%")
             time.sleep(interval)
         
         return stats_history
@@ -162,9 +160,6 @@ class ResourceStressTest:
             
             if self.send_message_batch(batch_size):
                 successful_batches += 1
-            
-            # 批次间间隔
-            time.sleep(1)
         
         end_time = time.time()
         duration = end_time - start_time
@@ -228,11 +223,14 @@ def main():
     stress_test = ResourceStressTest()
     results = []
     
-    # 测试场景: 每次500条消息，分别测试10、50、100批次
+    # 测试场景: 500和1000两个批次大小，分别测试10、50、100批次
     test_scenarios = [
-        (500, 10, "轻度压力测试 - 5K消息"),
-        (500, 50, "中度压力测试 - 25K消息"), 
-        (500, 100, "重度压力测试 - 50K消息")
+        (500, 10, "轻度压力测试 - 500x10 (5K消息)"),
+        (500, 50, "中度压力测试 - 500x50 (25K消息)"), 
+        (500, 100, "重度压力测试 - 500x100 (50K消息)"),
+        (1000, 10, "轻度压力测试 - 1000x10 (10K消息)"),
+        (1000, 50, "中度压力测试 - 1000x50 (50K消息)"),
+        (1000, 100, "重度压力测试 - 1000x100 (100K消息)")
     ]
     
     try:
