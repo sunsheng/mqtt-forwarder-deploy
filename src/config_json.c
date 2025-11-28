@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 // 默认配置值
@@ -85,14 +86,24 @@ static int parse_clients_config(cJSON *clients_json, config_t *config) {
         char *ip = get_string_value(client_json, "ip", NULL);
         char *client_id = get_string_value(client_json, "client_id", NULL);
 
-        if (!name || !ip || !client_id) {
-            LOG_ERROR("client missing required fields: name, ip, client_id");
+        if (!name || !ip) {
+            LOG_ERROR("client missing required fields: name, ip");
             return -1;
         }
 
         strncpy(client->name, name, sizeof(client->name) - 1);
         strncpy(client->ip, ip, sizeof(client->ip) - 1);
-        strncpy(client->client_id, client_id, sizeof(client->client_id) - 1);
+        
+        // client_id is optional, generate with UUID suffix if not provided
+        if (client_id) {
+            strncpy(client->client_id, client_id, sizeof(client->client_id) - 1);
+        } else {
+            // Generate random 8-character suffix
+            char uuid_suffix[9];
+            srand(time(NULL) + i);  // Seed with time + index for uniqueness
+            snprintf(uuid_suffix, sizeof(uuid_suffix), "%08x", rand());
+            snprintf(client->client_id, sizeof(client->client_id), "mqtt_forwarder_%s", uuid_suffix);
+        }
         client->port = get_int_value(client_json, "port", config->mqtt.port);
 
         free(name);
