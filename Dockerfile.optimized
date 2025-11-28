@@ -28,7 +28,9 @@ RUN cmake -B build -G Ninja \
 FROM alpine:3.19 AS runtime
 
 # 只安装必要的运行时依赖
-RUN apk add --no-cache mosquitto-libs cjson && \
+RUN apk add --no-cache mosquitto-libs cjson tzdata && \
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo "Asia/Shanghai" > /etc/timezone && \
     adduser -D -s /sbin/nologin mqtt-forwarder
 
 # 复制可执行文件
